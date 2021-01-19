@@ -44,7 +44,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         holder.tvHistoryDestination.setText(historyTrips.get(position).getDestinationName());
         holder.tvHistoryStatus.setText(historyTrips.get(position).getStatus());
         holder.tvHistoryType.setText(historyTrips.get(position).getType());
-        holder.tvHistoryDistance.setText(historyTrips.get(position).getDistance() + " km");
+        holder.tvHistoryDistance.setText(String.format("%.1f", historyTrips.get(position).getDistance()) + " km");
 
         holder.btnHistoryNote.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -181,6 +181,7 @@ public class Upcoming extends Fragment {
     }
 
     private void getData() {
+        upcomingTrips.clear();
         reference.child(user.getUid()).child("trips").child("upcoming").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -194,9 +195,9 @@ public class Upcoming extends Fragment {
                         rvUpcoming.setAdapter(upcomingAdapter);
                         rvUpcoming.setLayoutManager(new LinearLayoutManager(getContext()));
                         System.out.println(trip);
-                        setDataSource();
                     }
                 }
+                setDataSource();
             }
 
             @Override

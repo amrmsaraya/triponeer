@@ -81,6 +81,7 @@ public class History extends Fragment {
     }
 
     private void getData() {
+        historyTrips.clear();
         reference.child(user.getUid()).child("trips").child("history").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -93,10 +94,9 @@ public class History extends Fragment {
                     if (!historyTrips.isEmpty()) {
                         rvHistory.setAdapter(historyAdapter);
                         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
-                        System.out.println(trip);
-                        setDataSource();
                     }
                 }
+                setDataSource();
             }
 
             @Override

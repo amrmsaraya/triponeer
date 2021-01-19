@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -54,6 +55,7 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
     ImageButton btnRepeatDays;
     RecyclerView recyclerView;
     Button btnSaveAddTrip;
+    ProgressBar progressBarAddTrip;
     Trip trip;
     Trip modifiedTrip;
     String job;
@@ -261,10 +263,12 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                         trip.setType(type);
                         trip.setDistance(sourceLatLng.distanceTo(destLatLng) / 1000);
 
+                        progressBarAddTrip.setVisibility(View.VISIBLE);
                         FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
                                 .getCurrentUser().getUid()).child("trips").child("upcoming").child(trip.getName()).setValue(trip).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
+                                progressBarAddTrip.setVisibility(View.GONE);
                                 getActivity().getSupportFragmentManager().beginTransaction()
                                         .setCustomAnimations(R.anim.fragment_enter_left_to_right, R.anim.fragment_exit_to_right)
                                         .replace(R.id.fragment_container, new Upcoming()).commit();
@@ -292,10 +296,12 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                         modifiedTrip.setType(type);
                         modifiedTrip.setDistance(sourceLatLng.distanceTo(destLatLng) / 1000);
 
+                        progressBarAddTrip.setVisibility(View.VISIBLE);
                         FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
                                 .getCurrentUser().getUid()).child("trips").child("upcoming").child(modifiedTrip.getName()).setValue(modifiedTrip).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
+                                progressBarAddTrip.setVisibility(View.GONE);
                                 getActivity().getSupportFragmentManager().beginTransaction()
                                         .setCustomAnimations(R.anim.fragment_enter_left_to_right, R.anim.fragment_exit_to_right)
                                         .replace(R.id.fragment_container, new Upcoming()).commit();
@@ -357,6 +363,7 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
         txtViewError = view.findViewById(R.id.txtViewError);
         btnSaveAddTrip = view.findViewById(R.id.btnSaveAddTrip);
         txtViewNotesEmpty = view.findViewById(R.id.txtViewNotesEmpty);
+        progressBarAddTrip = view.findViewById(R.id.progressBarAddTrip);
         repeatedDays = new ArrayList<String>();
         repeat = "none";
         notes = new ArrayList<String>();

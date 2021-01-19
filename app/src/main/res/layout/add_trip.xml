@@ -12,6 +12,18 @@
         android:layout_height="wrap_content"
         android:background="@color/white">
 
+        <ProgressBar
+            android:id="@+id/progressBarAddTrip"
+            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <Spinner
             android:id="@+id/spinnerType"
             android:layout_width="wrap_content"
@@ -344,7 +356,7 @@
             android:id="@+id/btnSaveAddTrip"
             android:layout_width="wrap_content"
             android:layout_height="45dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:layout_weight="1"
             android:backgroundTint="@color/colorPrimary"
             android:text="@string/save"
@@ -353,14 +365,12 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/recyclerView" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/txtViewError"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
             android:textColor="@color/red_700"
             app:layout_constraintBottom_toTopOf="@+id/btnSaveAddTrip"
@@ -372,7 +382,9 @@
             android:id="@+id/txtViewNotesEmpty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/btnSaveAddTrip"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/txtViewError"
             app:layout_constraintStart_toStartOf="@+id/textView5"
             app:layout_constraintTop_toBottomOf="@+id/textView5" />
 

@@ -58,7 +58,7 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
         holder.tvUpcomingSource.setText(upcomingTrips.get(position).getSourceName());
         holder.tvUpcomingDestination.setText(upcomingTrips.get(position).getDestinationName());
         holder.tvUpcomingType.setText(upcomingTrips.get(position).getType());
-        holder.tvUpcomingDistance.setText(upcomingTrips.get(position).getDistance() + " km");
+        holder.tvUpcomingDistance.setText(String.format("%.1f", upcomingTrips.get(position).getDistance()) + " km");
 
 
         holder.btnUpcomingMenu.setOnClickListener(new View.OnClickListener() {
