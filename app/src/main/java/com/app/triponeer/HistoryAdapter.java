@@ -15,6 +15,11 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
@@ -73,13 +78,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
                 holder.btnConfirmDeleteTrip.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        historyTrips.remove(position);
-                        notifyDataSetChanged();
+                        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                .getCurrentUser().getUid()).child("trips").child("history").child(historyTrips.get(position).getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                historyTrips.remove(position);
+                                notifyDataSetChanged();
+                            }
+                        });
                         if (holder.dialog != null) {
                             holder.dialog.dismiss();
                         }
                     }
-
                 });
                 holder.btnCancelDeleteTrip.setOnClickListener(new View.OnClickListener() {
                     @Override

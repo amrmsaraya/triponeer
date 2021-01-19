@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,6 +13,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -22,6 +31,10 @@ public class History extends Fragment {
     ArrayList<Trip> historyTrips;
     SwipeRefreshLayout swipeRefreshLayoutHistory;
     ArrayList<String> notes;
+    private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseUser user;
+    private DatabaseReference reference;
+    Trip trip;
 
     @SuppressLint("ResourceAsColor")
     @Override
@@ -36,53 +49,28 @@ public class History extends Fragment {
         swipeRefreshLayoutHistory.setColorSchemeResources(R.color.colorPrimary);
         historyTrips = new ArrayList<>();
         notes = new ArrayList<>();
+        user = mAuth.getCurrentUser();
+        trip = new Trip();
+        reference = FirebaseDatabase.getInstance().getReference("Users");
+
+        getData();
 
         swipeRefreshLayoutHistory.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                getData();
                 swipeRefreshLayoutHistory.setRefreshing(false);
             }
         });
 
-        Trip trip = new Trip();
-        trip.setName("Mansoura");
-        trip.setDescription("Going to ITI using Superjet");
-        trip.setSource("ITI Suez", "address", 0, 0);
-        trip.setDestination("ITI Mansoura", "address", 0, 0);
-        trip.setDate("8-1-2020");
-        trip.setTime("9:00 AM");
-        trip.setStatus("Completed");
-        trip.setDistance(150);
-        trip.setType("Round");
-        notes.add("Buy Coffee");
-        notes.add("Call manager");
-        notes.add("Check Email");
-        trip.setNotes(notes);
-        Trip trip1 = new Trip();
-        trip1.setName("Mansoura");
-        trip1.setDescription("Going to ITI using Superjet");
-        trip1.setSource("ITI Ismalia", "address", 0, 0);
-        trip1.setDestination("Pyramids", "address", 0, 0);
-        trip1.setDate("8-1-2020");
-        trip1.setTime("9:00 AM");
-        trip1.setStatus("Cancelled");
-        trip1.setDistance(67);
-        trip1.setType("One Way");
-        historyTrips.add(trip);
-        historyTrips.add(trip1);
-        trip1.setNotes(notes);
 
-        historyAdapter = new HistoryAdapter();
-        rvHistory.setAdapter(historyAdapter);
-        rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
-        setDataSource();
-        
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+
         return view;
     }
 
@@ -90,6 +78,32 @@ public class History extends Fragment {
         if (historyAdapter != null) {
             historyAdapter.setData(historyTrips);
         }
+    }
+
+    private void getData() {
+        reference.child(user.getUid()).child("trips").child("history").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    trip = dataSnapshot.getValue(Trip.class);
+                    if (trip != null) {
+                        historyTrips.add(trip);
+                    }
+                    historyAdapter = new HistoryAdapter();
+                    if (!historyTrips.isEmpty()) {
+                        rvHistory.setAdapter(historyAdapter);
+                        rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
+                        System.out.println(trip);
+                        setDataSource();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
 }

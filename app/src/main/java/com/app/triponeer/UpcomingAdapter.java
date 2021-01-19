@@ -22,6 +22,11 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
 
 
@@ -73,8 +78,21 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
                                         .replace(R.id.fragment_container, new AddTrip(upcomingTrips.get(position), "edit")).addToBackStack(null).commit();
                                 return true;
                             case R.id.btnMenuCancel:
-                                upcomingTrips.get(position).setStatus("cancelled");
-                                // TODO -- Update DataBase
+                                upcomingTrips.get(position).setStatus("Cancelled");
+                                FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                        .getCurrentUser().getUid()).child("trips").child("upcoming").child(upcomingTrips.get(position).getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                                .getCurrentUser().getUid()).child("trips").child("history").child(upcomingTrips.get(position).getName()).setValue(upcomingTrips.get(position)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                upcomingTrips.remove(position);
+                                                notifyDataSetChanged();
+                                            }
+                                        });
+                                    }
+                                });
                                 return true;
                             default:
                                 return false;

@@ -1,13 +1,14 @@
 package com.app.triponeer;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
+
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,11 +20,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import java.io.File;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -34,12 +42,16 @@ public class Upcoming extends Fragment {
     RecyclerView rvUpcoming;
     UpcomingAdapter upcomingAdapter;
     ArrayList<Trip> upcomingTrips;
+    Trip trip;
     Button btnAdd;
     SwipeRefreshLayout swipeRefreshLayoutUpcoming;
     SharedPreferences saving;
     SharedPreferences.Editor edit;
     NormalUser normalUser;
     SocialMediaUser socialMediaUser;
+    private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseUser user;
+    private DatabaseReference reference;
 
     @SuppressLint("ResourceAsColor")
     @Override
@@ -52,13 +64,21 @@ public class Upcoming extends Fragment {
         swipeRefreshLayoutUpcoming.setColorSchemeResources(R.color.colorPrimary);
         normalUser = NormalUser.getInstance();
         socialMediaUser = SocialMediaUser.getInstance();
+        user = mAuth.getCurrentUser();
+        trip = new Trip();
+        reference = FirebaseDatabase.getInstance().getReference("Users");
         saveDataToNormalUserClass();
-
         setBtnAddAction();
+
+        rvUpcoming = view.findViewById(R.id.rvUpcoming);
+        upcomingTrips = new ArrayList<>();
+
+        getData();
 
         swipeRefreshLayoutUpcoming.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                getData();
                 swipeRefreshLayoutUpcoming.setRefreshing(false);
             }
         });
@@ -70,46 +90,6 @@ public class Upcoming extends Fragment {
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
-
-        rvUpcoming = view.findViewById(R.id.rvUpcoming);
-        upcomingTrips = new ArrayList<>();
-
-        ArrayList<String> notes = new ArrayList<>();
-        ArrayList<String> repeatDays = new ArrayList<>();
-        Trip trip = new Trip();
-        trip.setName("Ismalia");
-        trip.setDescription("Going to ITI using Superjet");
-        trip.setDate("12-1-2020");
-        trip.setTime("6:00 PM");
-        trip.setSource("ITI Suez", "address", 0, 0);
-        trip.setDestination("Barcelo Cairo Pyramids", "address", 29.999875853836755, 31.176258131389357);
-        repeatDays.add("Friday");
-        repeatDays.add("Tuesday");
-        repeatDays.add("Monday");
-        trip.setRepeatDays(repeatDays);
-        trip.setType("Round");
-        trip.setDistance(70.59);
-        notes.add("Buy Coffee");
-        notes.add("Call manager");
-        notes.add("Check Email");
-        trip.setNotes(notes);
-        Trip trip1 = new Trip();
-        trip1.setName("Mansoura");
-        trip1.setDescription("Going to ITI using Superjet");
-        trip1.setDate("12-1-2020");
-        trip1.setTime("4:45 AM");
-        trip1.setSource("Alexandria", "address", 0, 0);
-        trip1.setDestination("معهد تكنولوجيا المعلومات", "address", 30.071253966638995, 31.020768397551034);
-        trip1.setNotes(notes);
-        trip1.setType("One Way");
-        trip1.setDistance(10.5);
-        upcomingTrips.add(trip);
-        upcomingTrips.add(trip1);
-        upcomingAdapter = new UpcomingAdapter(getContext());
-        rvUpcoming.setAdapter(upcomingAdapter);
-        rvUpcoming.setLayoutManager(new LinearLayoutManager(getContext()));
-        setDataSource();
-
         return view;
     }
 
@@ -200,11 +180,29 @@ public class Upcoming extends Fragment {
         return image;
     }
 
-    public boolean isFileExists(String filename) {
-        File file = getContext().getFileStreamPath(filename);
-        if (file == null || !file.exists()) {
-            return false;
-        }
-        return true;
+    private void getData() {
+        reference.child(user.getUid()).child("trips").child("upcoming").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    trip = dataSnapshot.getValue(Trip.class);
+                    if (trip != null) {
+                        upcomingTrips.add(trip);
+                    }
+                    upcomingAdapter = new UpcomingAdapter(getContext());
+                    if (!upcomingTrips.isEmpty()) {
+                        rvUpcoming.setAdapter(upcomingAdapter);
+                        rvUpcoming.setLayoutManager(new LinearLayoutManager(getContext()));
+                        System.out.println(trip);
+                        setDataSource();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 }

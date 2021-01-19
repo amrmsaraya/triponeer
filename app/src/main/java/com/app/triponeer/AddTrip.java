@@ -18,11 +18,16 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -255,6 +260,17 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                         trip.setStatus("upcoming");
                         trip.setType(type);
                         trip.setDistance(sourceLatLng.distanceTo(destLatLng) / 1000);
+
+                        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                .getCurrentUser().getUid()).child("trips").child("upcoming").child(trip.getName()).setValue(trip).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                getActivity().getSupportFragmentManager().beginTransaction()
+                                        .setCustomAnimations(R.anim.fragment_enter_left_to_right, R.anim.fragment_exit_to_right)
+                                        .replace(R.id.fragment_container, new Upcoming()).commit();
+                            }
+                        });
+
                     } else if (job.equals("edit")) {
 
                         if (modifiedTrip == null) {
@@ -275,7 +291,18 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                         modifiedTrip.setStatus("upcoming");
                         modifiedTrip.setType(type);
                         modifiedTrip.setDistance(sourceLatLng.distanceTo(destLatLng) / 1000);
+
+                        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                .getCurrentUser().getUid()).child("trips").child("upcoming").child(modifiedTrip.getName()).setValue(modifiedTrip).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                getActivity().getSupportFragmentManager().beginTransaction()
+                                        .setCustomAnimations(R.anim.fragment_enter_left_to_right, R.anim.fragment_exit_to_right)
+                                        .replace(R.id.fragment_container, new Upcoming()).commit();
+                            }
+                        });
                     }
+
                 }
             }
         });
@@ -346,7 +373,8 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
             selected_day = c.get(Calendar.DAY_OF_MONTH);
             selected_hour = c.get(Calendar.HOUR_OF_DAY);
             selected_minute = c.get(Calendar.MINUTE);
-            txtViewDate.setText(selected_day + "-" + (selected_month + 1) + "-" + selected_year);
+            date = selected_day + "-" + (selected_month + 1) + "-" + selected_year;
+            txtViewDate.setText(date);
             setTxtViewTime(selected_hour, selected_minute);
         }
     }

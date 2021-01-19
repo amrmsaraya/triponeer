@@ -37,6 +37,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="10dp"
+                android:maxWidth="170dp"
+                android:singleLine="false"
                 android:text="This is the trip description "
                 android:textColor="@color/white"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -90,6 +92,8 @@
                 android:id="@+id/tvUpcomingDistance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxWidth="200dp"
+                android:singleLine="true"
                 app:layout_constraintStart_toStartOf="@+id/tvUpcomingDestination"
                 app:layout_constraintTop_toTopOf="@+id/textView13" />
 
@@ -106,6 +110,8 @@
                 android:id="@+id/tvUpcomingType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxWidth="200dp"
+                android:singleLine="true"
                 app:layout_constraintStart_toStartOf="@+id/tvUpcomingDestination"
                 app:layout_constraintTop_toTopOf="@+id/textView10" />
 
@@ -122,6 +128,8 @@
                 android:id="@+id/tvUpcomingSource"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxWidth="200dp"
+                android:singleLine="true"
                 app:layout_constraintStart_toStartOf="@+id/tvUpcomingDestination"
                 app:layout_constraintTop_toTopOf="@+id/textView8" />
 
@@ -130,6 +138,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:maxWidth="200dp"
+                android:singleLine="true"
                 app:layout_constraintStart_toEndOf="@+id/textView9"
                 app:layout_constraintTop_toTopOf="@+id/textView9" />
 

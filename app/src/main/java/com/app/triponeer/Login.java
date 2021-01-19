@@ -58,7 +58,7 @@ public class Login extends AppCompatActivity {
     TextView forgetPassword;
     private CallbackManager callbackManager;
     LoginButton loginButton;
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseUser user;
     private DatabaseReference reference;
     SocialMediaUser socialMediaUser;
@@ -117,7 +117,7 @@ public class Login extends AppCompatActivity {
                     edtTextLoginPassword.setError("Enter the required password");
                     edtTextLoginPassword.requestFocus();
                 } else {
-                    if (isValid(edtTextLoginEmail.getText().toString()) == false) {
+                    if (!isValid(edtTextLoginEmail.getText().toString())) {
                         edtTextLoginEmail.setError("Enter the valid email");
                         edtTextLoginEmail.requestFocus();
                         return;
