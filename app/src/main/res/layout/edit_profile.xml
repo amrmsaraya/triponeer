@@ -21,7 +21,7 @@
         app:layout_constraintTop_toBottomOf="@+id/edtTextEditProfileEmail" />
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/imgViewProfileImage"
+        android:id="@+id/imgViewEditProfileImage"
         android:layout_width="96dp"
         android:layout_height="96dp"
         android:layout_marginTop="32dp"
@@ -44,7 +44,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imgViewProfileImage" />
+        app:layout_constraintTop_toBottomOf="@+id/imgViewEditProfileImage" />
 
     <Button
         android:id="@+id/btnSaveEditProfile"

@@ -69,6 +69,7 @@ public class Login extends AppCompatActivity {
     public static final String LOGIN_EMAIL = "Email";
     public static final String LOGIN_NAME = "Name";
     public static final String LOGIN_PICTURE = "Picture";
+    public static final String IS_NEW_PICTURE = "isNewPicture";
     public static final String IS_LOGIN = "isLogin";
     public static final String IS_FACEBOOK_LOGIN = "isFacebookLogin";
     public static final String IS_GOOGLE_LOGIN = "isGoogleLogin";
@@ -156,6 +157,7 @@ public class Login extends AppCompatActivity {
                                                     } else {
                                                         edit.putString(LOGIN_PICTURE, normalUser.getImageUrl());
                                                     }
+                                                    edit.putBoolean(IS_NEW_PICTURE, true);
                                                     edit.putBoolean(IS_LOGIN, true);
                                                     edit.putBoolean(IS_FACEBOOK_LOGIN, false);
                                                     edit.putBoolean(IS_GOOGLE_LOGIN, false);
@@ -167,7 +169,7 @@ public class Login extends AppCompatActivity {
 
                                             @Override
                                             public void onCancelled(@NonNull DatabaseError error) {
-                                                Toast.makeText(getBaseContext(), "Something wrong happend!", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(getBaseContext(), "Something wrong happened!", Toast.LENGTH_SHORT).show();
                                             }
                                         });
 
@@ -180,7 +182,7 @@ public class Login extends AppCompatActivity {
                                         Toast.makeText(Login.this, "Check your email to verify you account!", Toast.LENGTH_SHORT).show();
                                     }
                                 } else {
-                                    Toast.makeText(Login.this, "Failed to login!Please check your credentials", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Login.this, "Wrong credentials!", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });

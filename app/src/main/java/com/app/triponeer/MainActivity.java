@@ -108,15 +108,6 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new Upcoming()).commit();
     }
-
-
-
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        moveTaskToBack(false);
-    }
 }
 
 

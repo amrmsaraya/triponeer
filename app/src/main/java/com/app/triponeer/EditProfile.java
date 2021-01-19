@@ -39,12 +39,13 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 
 public class EditProfile extends Fragment {
 
-    ImageView imgViewProfileImage;
+    ImageView imgViewEditProfileImage;
     EditText edtTextEditProfileName;
     EditText edtTextEditProfileEmail;
     EditText edtTextEditProfilePassword;
@@ -75,6 +76,17 @@ public class EditProfile extends Fragment {
 
         edtTextEditProfileName.setText(normalUser.getName());
         edtTextEditProfileEmail.setText(normalUser.getEmail());
+        if (!normalUser.getImageUrl().isEmpty()) {
+            try {
+                FileInputStream is = getContext().openFileInput(normalUser.getEmail() + ".png");
+                Bitmap image = BitmapFactory.decodeStream(is);
+                imgViewEditProfileImage.setImageBitmap(image);
+                is.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         btnSaveEditProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,7 +168,7 @@ public class EditProfile extends Fragment {
             }
         });
 
-        imgViewProfileImage.setOnClickListener(new View.OnClickListener() {
+        imgViewEditProfileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
@@ -164,6 +176,7 @@ public class EditProfile extends Fragment {
                 startActivityForResult(photoPickerIntent, 1);
             }
         });
+
 
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
@@ -179,7 +192,7 @@ public class EditProfile extends Fragment {
     }
 
     private void initComponent(View view) {
-        imgViewProfileImage = view.findViewById(R.id.imgViewProfileImage);
+        imgViewEditProfileImage = view.findViewById(R.id.imgViewEditProfileImage);
         edtTextEditProfileName = view.findViewById(R.id.edtTextEditProfileName);
         edtTextEditProfileEmail = view.findViewById(R.id.edtTextEditProfileEmail);
         edtTextEditProfileCurrentPassword = view.findViewById(R.id.edtTextEditProfileCurrentPassword);
@@ -246,7 +259,7 @@ public class EditProfile extends Fragment {
                 pictureUri = imageUri;
                 final Bitmap selectedImage = decodeSampledBitmapFromStream(getContext(), imageUri, 200, 200);
                 profileImage = selectedImage;
-                imgViewProfileImage.setImageBitmap(selectedImage);
+                imgViewEditProfileImage.setImageBitmap(selectedImage);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -266,12 +279,9 @@ public class EditProfile extends Fragment {
             edit.putString(Login.LOGIN_EMAIL, edtTextEditProfileEmail.getText().toString());
             edit.apply();
         }
-        if (!normalUser.getImageUrl().equals(pictureUri.toString())) {
-            uploadToFirebase(pictureUri);
-            normalUser.setImageUrl(pictureUri.toString());
-            edit.putString(Login.LOGIN_PICTURE, pictureUri.toString());
-            edit.apply();
-        }
+        uploadToFirebase(pictureUri);
+
+
     }
 
     private void uploadToFirebase(Uri uri) {
@@ -284,8 +294,11 @@ public class EditProfile extends Fragment {
                     @Override
                     public void onSuccess(Uri uri) {
                         reference.child(user.getUid()).child("imageUrl").setValue(uri.toString());
+                        normalUser.setImageUrl(uri.toString());
+                        edit.putString(Login.LOGIN_PICTURE, uri.toString());
+                        edit.putBoolean(Login.IS_NEW_PICTURE, true);
+                        edit.apply();
                         progressBar.setVisibility(View.INVISIBLE);
-                        Toast.makeText(getActivity(), "Uploaded Successfully", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

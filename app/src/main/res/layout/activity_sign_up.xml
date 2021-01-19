@@ -82,7 +82,7 @@
             android:layout_marginBottom="24dp"
             android:background="@drawable/rounded_corner"
             android:fontFamily="sans-serif-medium"
-            android:text="Sign Up"
+            android:text="@string/signup"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="18sp"

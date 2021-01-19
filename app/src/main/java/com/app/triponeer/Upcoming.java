@@ -1,7 +1,10 @@
 package com.app.triponeer;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -16,7 +19,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+
+import javax.net.ssl.HttpsURLConnection;
 
 
 public class Upcoming extends Fragment {
@@ -56,9 +67,6 @@ public class Upcoming extends Fragment {
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.fragment_enter_left_to_right, R.anim.fragment_exit_to_left)
-                        .replace(R.id.fragment_container, new Upcoming()).commit();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
@@ -125,27 +133,78 @@ public class Upcoming extends Fragment {
     public void saveDataToNormalUserClass() {
         saving = getActivity().getSharedPreferences(Login.LOGIN_DATA, 0);
         if (saving.getBoolean(Login.IS_LOGIN, false)) {
-            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty()) {
+            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty() &&
+                    !saving.getString(Login.LOGIN_EMAIL, "").isEmpty() &&
+                    !saving.getString(Login.LOGIN_PICTURE, "").isEmpty()) {
                 Log.i("MainActivity", "SharePref: " + saving.getString(Login.LOGIN_NAME, ""));
                 normalUser.setName(saving.getString(Login.LOGIN_NAME, ""));
                 normalUser.setEmail(saving.getString(Login.LOGIN_EMAIL, ""));
                 normalUser.setImageUrl(saving.getString(Login.LOGIN_PICTURE, ""));
+                if (saving.getBoolean(Login.IS_NEW_PICTURE, false)) {
+                    edit = saving.edit();
+                    edit.putBoolean(Login.IS_NEW_PICTURE, false);
+                    edit.apply();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            String url = normalUser.getImageUrl();
+                            Bitmap image = downloadImage(url);
+                            try {
+                                FileOutputStream stream = getContext().openFileOutput(normalUser.getEmail() + ".png", getContext().MODE_PRIVATE);
+                                image.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                stream.close();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }
             }
         } else if (saving.getBoolean(Login.IS_FACEBOOK_LOGIN, false)) {
-            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty()) {
+            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty() &&
+                    !saving.getString(Login.LOGIN_EMAIL, "").isEmpty() &&
+                    !saving.getString(Login.LOGIN_PICTURE, "").isEmpty()) {
                 Log.i("MainActivity", "SharePref: " + saving.getString(Login.LOGIN_NAME, ""));
                 socialMediaUser.setName(saving.getString(Login.LOGIN_NAME, ""));
                 socialMediaUser.setEmail(saving.getString(Login.LOGIN_EMAIL, ""));
                 socialMediaUser.setImageUrl(saving.getString(Login.LOGIN_PICTURE, ""));
             }
         } else if (saving.getBoolean(Login.IS_GOOGLE_LOGIN, false)) {
-            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty()) {
+            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty() &&
+                    !saving.getString(Login.LOGIN_EMAIL, "").isEmpty() &&
+                    !saving.getString(Login.LOGIN_PICTURE, "").isEmpty()) {
                 Log.i("MainActivity", "SharePref: " + saving.getString(Login.LOGIN_NAME, ""));
                 socialMediaUser.setName(saving.getString(Login.LOGIN_NAME, ""));
                 socialMediaUser.setEmail(saving.getString(Login.LOGIN_EMAIL, ""));
                 socialMediaUser.setImageUrl(saving.getString(Login.LOGIN_PICTURE, ""));
             }
         }
+    }
 
+    public Bitmap downloadImage(String url) {
+        Bitmap image = null;
+        URL urlObj = null;
+        HttpsURLConnection connection;
+        InputStream inputStream;
+        try {
+            urlObj = new URL(url);
+            connection = (HttpsURLConnection) urlObj.openConnection();
+            connection.connect();
+            inputStream = connection.getInputStream();
+            image = BitmapFactory.decodeStream(inputStream);
+            connection.disconnect();
+            inputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return image;
+    }
+
+    public boolean isFileExists(String filename) {
+        File file = getContext().getFileStreamPath(filename);
+        if (file == null || !file.exists()) {
+            return false;
+        }
+        return true;
     }
 }

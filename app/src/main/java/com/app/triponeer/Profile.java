@@ -2,6 +2,8 @@ package com.app.triponeer;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -20,13 +22,10 @@ import android.widget.Toast;
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.mapbox.mapboxsdk.text.LocalGlyphRasterizer;
 import com.squareup.picasso.Picasso;
+
+import java.io.FileInputStream;
+
 
 public class Profile extends Fragment {
     Button btnEditProfile, btnLogout;
@@ -60,9 +59,6 @@ public class Profile extends Fragment {
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.fragment_enter_left_to_right, R.anim.fragment_exit_to_right)
-                        .replace(R.id.fragment_container, new Profile()).commit();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
@@ -90,13 +86,20 @@ public class Profile extends Fragment {
             txtViewProfileName.setText(normalUser.getName());
             txtViewProfileEmail.setText(normalUser.getEmail());
             if (!normalUser.getImageUrl().isEmpty()) {
-                Picasso.get().load(normalUser.getImageUrl()).into(imgViewProfilePicture);
+                try {
+                    FileInputStream is = getContext().openFileInput(normalUser.getEmail() + ".png");
+                    Bitmap image = BitmapFactory.decodeStream(is);
+                    imgViewProfilePicture.setImageBitmap(image);
+                    is.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         } else if (saving.getBoolean(Login.IS_FACEBOOK_LOGIN, false)) {
             txtViewProfileName.setText(socialMediaUser.getName());
             txtViewProfileEmail.setText(socialMediaUser.getEmail());
 
-        } else if(saving.getBoolean(Login.IS_GOOGLE_LOGIN, false)) {
+        } else if (saving.getBoolean(Login.IS_GOOGLE_LOGIN, false)) {
             txtViewProfileName.setText(socialMediaUser.getName());
             txtViewProfileEmail.setText(socialMediaUser.getEmail());
             if (!socialMediaUser.getImageUrl().isEmpty()) {

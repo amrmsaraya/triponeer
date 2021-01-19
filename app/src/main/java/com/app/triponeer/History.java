@@ -27,16 +27,8 @@ public class History extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.fragment_enter_left_to_right, R.anim.fragment_exit_to_right)
-                        .replace(R.id.fragment_container, History.this).commit();
-            }
-        };
 
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+
         View view = inflater.inflate(R.layout.history, container, false);
 
         rvHistory = view.findViewById(R.id.rvHistory);
@@ -84,7 +76,13 @@ public class History extends Fragment {
         rvHistory.setAdapter(historyAdapter);
         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
         setDataSource();
-
+        
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
         return view;
     }
 
