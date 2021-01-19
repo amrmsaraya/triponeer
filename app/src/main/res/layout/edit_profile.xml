@@ -6,6 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".EditProfile">
 
+    <EditText
+        android:id="@+id/edtTextEditProfileCurrentPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:hint="@string/current_password"
+        android:inputType="textNoSuggestions|textEmailAddress"
+        android:password="true"
+        app:layout_constraintEnd_toEndOf="@+id/edtTextEditProfileName"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/edtTextEditProfileName"
+        app:layout_constraintTop_toBottomOf="@+id/edtTextEditProfileEmail" />
+
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imgViewProfileImage"
         android:layout_width="96dp"
@@ -20,13 +34,13 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/edtTextName"
+        android:id="@+id/edtTextEditProfileName"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:ems="10"
         android:hint="@string/name_hint"
-        android:inputType="textPersonName"
+        android:inputType="textNoSuggestions|textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,70 +55,46 @@
         android:text="@string/save"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        app:layout_constraintEnd_toEndOf="@+id/edtTextConfirmPassword"
-        app:layout_constraintStart_toStartOf="@+id/edtTextConfirmPassword"
-        app:layout_constraintTop_toBottomOf="@+id/edtTextConfirmPassword" />
+        app:layout_constraintEnd_toEndOf="@+id/edtTextEditProfileConfirmPassword"
+        app:layout_constraintStart_toStartOf="@+id/edtTextEditProfileConfirmPassword"
+        app:layout_constraintTop_toBottomOf="@+id/edtTextEditProfileConfirmPassword" />
 
     <EditText
-        android:id="@+id/edtTextEmail"
+        android:id="@+id/edtTextEditProfileEmail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:ems="10"
         android:hint="@string/email_hint"
-        android:inputType="textEmailAddress"
-        app:layout_constraintEnd_toEndOf="@+id/edtTextName"
-        app:layout_constraintStart_toStartOf="@+id/edtTextName"
-        app:layout_constraintTop_toBottomOf="@+id/edtTextName" />
+        android:inputType="textNoSuggestions|textEmailAddress"
+        app:layout_constraintEnd_toEndOf="@+id/edtTextEditProfileName"
+        app:layout_constraintStart_toStartOf="@+id/edtTextEditProfileName"
+        app:layout_constraintTop_toBottomOf="@+id/edtTextEditProfileName" />
 
     <EditText
-        android:id="@+id/edtTextPassword"
+        android:id="@+id/edtTextEditProfilePassword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="68dp"
         android:ems="10"
         android:hint="@string/password_hint"
-        android:inputType="textPassword"
+        android:inputType="textNoSuggestions|textPassword"
         android:password="true"
-        app:layout_constraintEnd_toEndOf="@+id/edtOldPassword"
-        app:layout_constraintStart_toStartOf="@+id/edtOldPassword"
-        app:layout_constraintTop_toBottomOf="@+id/edtTextEmail" />
+        app:layout_constraintEnd_toEndOf="@+id/edtTextEditProfileCurrentPassword"
+        app:layout_constraintStart_toStartOf="@+id/edtTextEditProfileCurrentPassword"
+        app:layout_constraintTop_toBottomOf="@+id/edtTextEditProfileCurrentPassword" />
 
     <EditText
-        android:id="@+id/edtOldPassword"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:ems="10"
-        android:hint="@string/edtCurrentPassword"
-        android:inputType="textPassword"
-        android:password="true"
-        app:layout_constraintEnd_toEndOf="@+id/edtTextEmail"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/edtTextEmail"
-        app:layout_constraintTop_toBottomOf="@+id/edtTextEmail" />
-
-    <EditText
-        android:id="@+id/edtTextConfirmPassword"
+        android:id="@+id/edtTextEditProfileConfirmPassword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:ems="10"
         android:hint="@string/confirm_password_hint"
-        android:inputType="textPassword"
+        android:inputType="textNoSuggestions|textPassword"
         android:password="true"
-        app:layout_constraintEnd_toEndOf="@+id/edtTextPassword"
-        app:layout_constraintStart_toStartOf="@+id/edtTextPassword"
-        app:layout_constraintTop_toBottomOf="@+id/edtTextPassword" />
-
-    <TextView
-        android:id="@+id/txtViewEditProfileWarning"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/red_700"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@+id/edtTextConfirmPassword"
-        app:layout_constraintTop_toBottomOf="@+id/edtTextConfirmPassword" />
+        app:layout_constraintEnd_toEndOf="@+id/edtTextEditProfilePassword"
+        app:layout_constraintStart_toStartOf="@+id/edtTextEditProfilePassword"
+        app:layout_constraintTop_toBottomOf="@+id/edtTextEditProfilePassword" />
 
     <ProgressBar
         android:id="@+id/progressBar2"

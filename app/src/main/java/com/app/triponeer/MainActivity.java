@@ -3,7 +3,9 @@ package com.app.triponeer;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.etebarian.meowbottomnavigation.MeowBottomNavigation;
 
@@ -18,11 +20,13 @@ public class MainActivity extends AppCompatActivity {
     boolean isClicked;
     boolean isEditClicked = true;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupBottomBar();
+
     }
 
     private void setupBottomBar() {
@@ -104,6 +108,9 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new Upcoming()).commit();
     }
+
+
+
 
     @Override
     public void onBackPressed() {

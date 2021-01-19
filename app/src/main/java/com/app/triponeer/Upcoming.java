@@ -1,6 +1,7 @@
 package com.app.triponeer;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,10 @@ public class Upcoming extends Fragment {
     ArrayList<Trip> upcomingTrips;
     Button btnAdd;
     SwipeRefreshLayout swipeRefreshLayoutUpcoming;
+    SharedPreferences saving;
+    SharedPreferences.Editor edit;
+    NormalUser normalUser;
+    SocialMediaUser socialMediaUser;
 
     @SuppressLint("ResourceAsColor")
     @Override
@@ -33,6 +39,10 @@ public class Upcoming extends Fragment {
         btnAdd = view.findViewById(R.id.btnAddTrip);
         swipeRefreshLayoutUpcoming = view.findViewById(R.id.swipeRefreshLayoutUpcoming);
         swipeRefreshLayoutUpcoming.setColorSchemeResources(R.color.colorPrimary);
+        normalUser = NormalUser.getInstance();
+        socialMediaUser = SocialMediaUser.getInstance();
+        saveDataToNormalUserClass();
+
         setBtnAddAction();
 
         swipeRefreshLayoutUpcoming.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -112,4 +122,30 @@ public class Upcoming extends Fragment {
         });
     }
 
+    public void saveDataToNormalUserClass() {
+        saving = getActivity().getSharedPreferences(Login.LOGIN_DATA, 0);
+        if (saving.getBoolean(Login.IS_LOGIN, false)) {
+            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty()) {
+                Log.i("MainActivity", "SharePref: " + saving.getString(Login.LOGIN_NAME, ""));
+                normalUser.setName(saving.getString(Login.LOGIN_NAME, ""));
+                normalUser.setEmail(saving.getString(Login.LOGIN_EMAIL, ""));
+                normalUser.setImageUrl(saving.getString(Login.LOGIN_PICTURE, ""));
+            }
+        } else if (saving.getBoolean(Login.IS_FACEBOOK_LOGIN, false)) {
+            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty()) {
+                Log.i("MainActivity", "SharePref: " + saving.getString(Login.LOGIN_NAME, ""));
+                socialMediaUser.setName(saving.getString(Login.LOGIN_NAME, ""));
+                socialMediaUser.setEmail(saving.getString(Login.LOGIN_EMAIL, ""));
+                socialMediaUser.setImageUrl(saving.getString(Login.LOGIN_PICTURE, ""));
+            }
+        } else if (saving.getBoolean(Login.IS_GOOGLE_LOGIN, false)) {
+            if (!saving.getString(Login.LOGIN_NAME, "").isEmpty()) {
+                Log.i("MainActivity", "SharePref: " + saving.getString(Login.LOGIN_NAME, ""));
+                socialMediaUser.setName(saving.getString(Login.LOGIN_NAME, ""));
+                socialMediaUser.setEmail(saving.getString(Login.LOGIN_EMAIL, ""));
+                socialMediaUser.setImageUrl(saving.getString(Login.LOGIN_PICTURE, ""));
+            }
+        }
+
+    }
 }

@@ -33,26 +33,36 @@
             app:layout_constraintStart_toStartOf="@+id/edtTextSignupPassword"
             app:layout_constraintTop_toBottomOf="@+id/btnlogin" />
 
-        <Button
-            android:id="@+id/btnGoogleLogin"
+<!--        <com.google.android.gms.common.SignInButton-->
+<!--            android:id="@+id/sign_in_button"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:layout_marginTop="8dp"-->
+<!--            android:background="@drawable/rounded_corner"-->
+<!--            android:backgroundTint="@color/google_red"-->
+<!--            android:drawableLeft="@drawable/google"-->
+<!--            android:fontFamily="sans-serif-medium"-->
+<!--            android:includeFontPadding="true"-->
+<!--            android:paddingLeft="16dp"-->
+<!--            android:paddingRight="16dp"-->
+<!--            android:text="@string/login_with_google"-->
+<!--            android:textAllCaps="false"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:textSize="18sp"-->
+<!--            app:layout_constraintEnd_toEndOf="@+id/edtTextSignupPassword"-->
+<!--            app:layout_constraintHorizontal_bias="0.0"-->
+<!--            app:layout_constraintStart_toStartOf="@+id/edtTextSignupPassword"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/login_button" />-->
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/sign_in_button"
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/rounded_corner"
-            android:backgroundTint="@color/google_red"
-            android:drawableLeft="@drawable/google"
-            android:fontFamily="sans-serif-medium"
-            android:includeFontPadding="true"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:text="@string/login_with_google"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="@+id/edtTextSignupPassword"
+            app:layout_constraintEnd_toEndOf="@+id/login_button"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="@+id/edtTextSignupPassword"
+            app:layout_constraintStart_toStartOf="@+id/login_button"
             app:layout_constraintTop_toBottomOf="@+id/login_button" />
+
 
         <View
             android:layout_width="0dp"
@@ -85,7 +95,7 @@
             android:layout_marginEnd="32dp"
             android:ems="10"
             android:hint="@string/email"
-            android:inputType="textEmailAddress"
+            android:inputType="textNoSuggestions|textEmailAddress"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/logo" />
@@ -97,7 +107,7 @@
             android:layout_marginTop="16dp"
             android:ems="10"
             android:hint="@string/pass"
-            android:inputType="textPassword"
+            android:inputType="textNoSuggestions|textPassword"
             app:layout_constraintEnd_toEndOf="@+id/edtTextSignupEmail"
             app:layout_constraintStart_toStartOf="@+id/edtTextSignupEmail"
             app:layout_constraintTop_toBottomOf="@+id/edtTextSignupEmail" />
@@ -157,7 +167,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnGoogleLogin" />
+            app:layout_constraintTop_toBottomOf="@+id/sign_in_button" />
 
         <TextView
             android:id="@+id/forgetPassword"

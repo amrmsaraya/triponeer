@@ -25,19 +25,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.mapbox.mapboxsdk.text.LocalGlyphRasterizer;
 import com.squareup.picasso.Picasso;
 
 public class Profile extends Fragment {
     Button btnEditProfile, btnLogout;
     ImageView imgViewProfilePicture;
     TextView txtViewProfileName, txtViewProfileEmail;
-    private FirebaseAuth auth = FirebaseAuth.getInstance();
-    private FirebaseUser user = auth.getCurrentUser();
-    private DatabaseReference reference;
-    private String emailID = "";
-    AccountData account;
+    SocialMediaUser socialMediaUser;
+    NormalUser normalUser;
     SharedPreferences saving;
     SharedPreferences.Editor edit;
+    private FirebaseAuth auth = FirebaseAuth.getInstance();
+    private FirebaseUser user = auth.getCurrentUser();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,48 +49,14 @@ public class Profile extends Fragment {
         imgViewProfilePicture = view.findViewById(R.id.imgViewProfilePicture);
         txtViewProfileName = view.findViewById(R.id.txtViewProfileName);
         txtViewProfileEmail = view.findViewById(R.id.txtViewProfileEmail);
-        account = new AccountData();
+        socialMediaUser = SocialMediaUser.getInstance();
+        normalUser = NormalUser.getInstance();
+        saving = getContext().getSharedPreferences(Login.LOGIN_DATA, 0);
+        edit = saving.edit();
+        showUserData();
         btnEditProfile();
         btnLogout();
 
-        if (user != null) {
-            reference = FirebaseDatabase.getInstance().getReference("Users");
-            emailID = user.getUid();
-            reference.child(emailID).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    User userProfile = snapshot.getValue(User.class);
-                    if (userProfile != null) {
-                        String name = userProfile.accName;
-                        String emails = userProfile.accEmail;
-
-
-                              txtViewProfileName.setText(name);
-                              txtViewProfileEmail.setText(emails);
-
-                    } else if (user != null) {
-                        txtViewProfileName.setText(user.getDisplayName());
-                        txtViewProfileEmail.setText(user.getEmail());
-                        String photoURL = user.getPhotoUrl().toString();
-                        photoURL = photoURL + "?type=large";
-                        if (photoURL != null) {
-                            Picasso.get().load(photoURL).into(imgViewProfilePicture);
-                        } else {
-                            imgViewProfilePicture.setImageResource(R.drawable.profile_96);
-                        }
-                    }
-
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(getContext(), "Something wrong happend!", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            boolean firstTime = saving.getBoolean(Login.newLogin, true);
-            Log.i("TAG", "user is null");
-        }
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -104,21 +70,40 @@ public class Profile extends Fragment {
         return view;
     }
 
-
     void btnEditProfile() {
         btnEditProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bundle bundle = new Bundle();
-                bundle.putString("name", txtViewProfileName.getText().toString());
-                bundle.putString("email", txtViewProfileEmail.getText().toString());
-                EditProfile editProfile = new EditProfile();
-                editProfile.setArguments(bundle);
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.fragment_enter_right_to_left, R.anim.fragment_exit_to_left)
-                        .replace(R.id.fragment_container, editProfile).commit();
+                if (saving.getBoolean(Login.IS_LOGIN, true)) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(R.anim.fragment_enter_right_to_left, R.anim.fragment_exit_to_left)
+                            .replace(R.id.fragment_container, new EditProfile()).commit();
+                } else {
+                    Toast.makeText(getContext(), "Please Change your data from your social media account!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
+    }
+
+    void showUserData() {
+        if (saving.getBoolean(Login.IS_LOGIN, false)) {
+            txtViewProfileName.setText(normalUser.getName());
+            txtViewProfileEmail.setText(normalUser.getEmail());
+            if (!normalUser.getImageUrl().isEmpty()) {
+                Picasso.get().load(normalUser.getImageUrl()).into(imgViewProfilePicture);
+            }
+        } else if (saving.getBoolean(Login.IS_FACEBOOK_LOGIN, false)) {
+            txtViewProfileName.setText(socialMediaUser.getName());
+            txtViewProfileEmail.setText(socialMediaUser.getEmail());
+
+        } else if(saving.getBoolean(Login.IS_GOOGLE_LOGIN, false)) {
+            txtViewProfileName.setText(socialMediaUser.getName());
+            txtViewProfileEmail.setText(socialMediaUser.getEmail());
+            if (!socialMediaUser.getImageUrl().isEmpty()) {
+                Picasso.get().load(socialMediaUser.getImageUrl()).into(imgViewProfilePicture);
+            }
+        }
+
     }
 
     void btnLogout() {
@@ -128,9 +113,16 @@ public class Profile extends Fragment {
                 auth.signOut();
                 LoginManager.getInstance().logOut();
                 Intent intent = new Intent(getContext(), Login.class);
-                saving = getContext().getSharedPreferences(Login.saveData, 0);
-                edit = saving.edit();
-                edit.putBoolean(Login.newLogin, false);
+                try {
+                    edit.putString(Login.LOGIN_NAME, "");
+                    edit.putString(Login.LOGIN_EMAIL, "");
+                    edit.putString(Login.LOGIN_PICTURE, "");
+                    edit.putBoolean(Login.IS_LOGIN, false);
+                    edit.putBoolean(Login.IS_FACEBOOK_LOGIN, false);
+                    edit.putBoolean(Login.IS_GOOGLE_LOGIN, false);
+                } catch (Exception e) {
+                    Log.i("Profile", "onComplete: " + e);
+                }
                 edit.commit();
                 FirebaseAuth.getInstance().signOut();
                 LoginManager.getInstance().logOut();

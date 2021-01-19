@@ -59,11 +59,13 @@
     <string name="type_">Type</string>
     <string name="forget_password">Forget Password ?</string>
     <string name="reset_password">Reset Password</string>
+    <string name="edtCurrentPassword">Current Password</string>
     <string-array name="type">
         <item>One Way</item>
         <item>Round</item>
     </string-array>
     <string name="facebook_app_id">1873372106151098</string>
     <string name="fb_login_protocol_scheme">fb1873372106151098</string>
-    <string name="edtCurrentPassword">Current Password</string>
+    <string name="current_password">Current Password</string>
+    <string name="web_client_id">AIzaSyAj1XWl1WRzpO5r6haDzQb6oeK3804OgCg</string>
 </resources>

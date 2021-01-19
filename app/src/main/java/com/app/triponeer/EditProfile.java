@@ -3,14 +3,17 @@ package com.app.triponeer;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -23,17 +26,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.InputStream;
 
@@ -41,65 +45,85 @@ import java.io.InputStream;
 public class EditProfile extends Fragment {
 
     ImageView imgViewProfileImage;
-    EditText edtTextName;
-    EditText edtTextEmail;
-    EditText edtTextPassword;
-    EditText edtTextConfirmPassword;
+    EditText edtTextEditProfileName;
+    EditText edtTextEditProfileEmail;
+    EditText edtTextEditProfilePassword;
+    EditText edtTextEditProfileConfirmPassword;
     Button btnSaveEditProfile;
-    TextView txtViewEditProfileWarning;
-    EditText edtOldPassword;
+    EditText edtTextEditProfileCurrentPassword;
     Bitmap profileImage;
-    String name;
-    String email;
-    String password;
-    FirebaseAuth auth=FirebaseAuth.getInstance();
-    private FirebaseUser user=auth.getCurrentUser();
+    FirebaseAuth auth = FirebaseAuth.getInstance();
+    private FirebaseUser user = auth.getCurrentUser();
     public static Uri imgpath;
     ProgressBar progressBar;
     DatabaseReference reference;
+    NormalUser normalUser = NormalUser.getInstance();
+    SharedPreferences saving;
+    SharedPreferences.Editor edit;
+    Uri pictureUri;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.edit_profile, container, false);
-        name = getArguments().getString("name");
-        email = getArguments().getString("email");
-        password=getArguments().getString("password");
+
         initComponent(view);
 
-        edtTextName.setText(name);
-        edtTextEmail.setText(email);
+        saving = getContext().getSharedPreferences(Login.LOGIN_DATA, 0);
+        edit = saving.edit();
+
+        edtTextEditProfileName.setText(normalUser.getName());
+        edtTextEditProfileEmail.setText(normalUser.getEmail());
         btnSaveEditProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (edtTextName.getText().toString().isEmpty() ||
-                        edtTextEmail.getText().toString().isEmpty()) {
-                      txtViewEditProfileWarning.setText("* Enter the valid data");
-                } else if (!isValid(edtTextEmail.getText().toString())) {
-                    txtViewEditProfileWarning.setText("* Invalid Email Address !");
-                } else if (!edtTextPassword.getText().toString().equals(edtTextConfirmPassword.getText().toString())) {
-                    txtViewEditProfileWarning.setText("* password doesn't match !");
-                    edtTextPassword.setText("");
-                    edtTextConfirmPassword.setText("");
-                } else if(user!=null) {
+                if (edtTextEditProfileName.getText().toString().isEmpty() ||
+                        edtTextEditProfileEmail.getText().toString().isEmpty() ||
+                        edtTextEditProfilePassword.getText().toString().isEmpty() ||
+                        edtTextEditProfileConfirmPassword.getText().toString().isEmpty()
+                ) {
+                    if (edtTextEditProfileName.getText().toString().isEmpty()) {
+                        edtTextEditProfileName.setError("Full Name");
+                        edtTextEditProfileName.requestFocus();
+                    }
+                    if (edtTextEditProfileEmail.getText().toString().isEmpty()) {
+                        edtTextEditProfileEmail.setError("Valid Email address");
+                        edtTextEditProfileEmail.requestFocus();
+                    }
+                    if (edtTextEditProfilePassword.getText().toString().isEmpty()) {
+                        edtTextEditProfilePassword.setError("Password should be 6 characters at least");
+                        edtTextEditProfilePassword.requestFocus();
+                    }
+                    if (edtTextEditProfileConfirmPassword.getText().toString().isEmpty()) {
+                        edtTextEditProfileConfirmPassword.setError("Confirm Password");
+                        edtTextEditProfileConfirmPassword.requestFocus();
+                    }
 
-                   /* name = edtTextName.getText().toString();
-                    email = edtTextEmail.getText().toString();
-                    password = edtTextPassword.getText().toString();*/
-                    String oldpassword=edtOldPassword.getText().toString();
+                } else if (!Patterns.EMAIL_ADDRESS.matcher(edtTextEditProfileEmail.getText().toString()).matches()) {
+                    edtTextEditProfileEmail.setError("Invalid Email!");
+                    edtTextEditProfileEmail.requestFocus();
+                } else if (edtTextEditProfilePassword.getText().toString().length() < 6) {
+                    edtTextEditProfilePassword.setError("Password should be 6 characters at least");
+                    edtTextEditProfilePassword.requestFocus();
+                } else if (!(edtTextEditProfilePassword.getText().toString().equals(edtTextEditProfileConfirmPassword.getText().toString()))) {
+                    edtTextEditProfileConfirmPassword.setError("Password doesn't match");
+                    edtTextEditProfileConfirmPassword.requestFocus();
+                } else {
+
+                    String currentPassword = edtTextEditProfileCurrentPassword.getText().toString();
 
                     progressBar.setVisibility(View.VISIBLE);
-                    reference= FirebaseDatabase.getInstance().getReference("Users");
-                    isNameChanged(view);
-                    isEmailChanged(view);
-                    isPasswordChanged(view);
-                    AuthCredential authCredential= EmailAuthProvider.getCredential(user.getEmail(),oldpassword);
+                    reference = FirebaseDatabase.getInstance().getReference("Users");
+                    changeData();
+
+                    AuthCredential authCredential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
 
                     user.reauthenticate(authCredential)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    user.updatePassword(edtTextPassword.getText().toString())
+                                    user.updatePassword(edtTextEditProfilePassword.getText().toString())
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
@@ -107,43 +131,30 @@ public class EditProfile extends Fragment {
                                             }).addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-
                                         }
                                     });
-                                    user.updateEmail(edtTextEmail.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    user.updateEmail(edtTextEditProfileEmail.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-
                                         }
                                     });
-
-
-                                    Toast.makeText(getContext(), "Data has been updated", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Profile has been updated", Toast.LENGTH_SHORT).show();
                                     getActivity().getSupportFragmentManager().beginTransaction()
                                             .setCustomAnimations(R.anim.fragment_enter_left_to_right, R.anim.fragment_exit_to_right)
                                             .replace(R.id.fragment_container, new Profile()).commit();
-
-
-
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getContext(), "Data is the same and cannot be updated!", Toast.LENGTH_SHORT).show();
-
-
                         }
                     });
-
-
                 }
             }
         });
-
 
         imgViewProfileImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -169,14 +180,13 @@ public class EditProfile extends Fragment {
 
     private void initComponent(View view) {
         imgViewProfileImage = view.findViewById(R.id.imgViewProfileImage);
-        edtTextName = view.findViewById(R.id.edtTextName);
-        edtTextEmail = view.findViewById(R.id.edtTextEmail);
-        edtTextPassword = view.findViewById(R.id.edtTextPassword);
-        edtTextConfirmPassword = view.findViewById(R.id.edtTextConfirmPassword);
+        edtTextEditProfileName = view.findViewById(R.id.edtTextEditProfileName);
+        edtTextEditProfileEmail = view.findViewById(R.id.edtTextEditProfileEmail);
+        edtTextEditProfileCurrentPassword = view.findViewById(R.id.edtTextEditProfileCurrentPassword);
+        edtTextEditProfilePassword = view.findViewById(R.id.edtTextEditProfilePassword);
+        edtTextEditProfileConfirmPassword = view.findViewById(R.id.edtTextEditProfileConfirmPassword);
         btnSaveEditProfile = view.findViewById(R.id.btnSaveEditProfile);
-        txtViewEditProfileWarning = view.findViewById(R.id.txtViewEditProfileWarning);
-        edtOldPassword=view.findViewById(R.id.edtOldPassword);
-        progressBar=view.findViewById(R.id.progressBar2);
+        progressBar = view.findViewById(R.id.progressBar2);
         profileImage = null;
     }
 
@@ -232,7 +242,8 @@ public class EditProfile extends Fragment {
         if (resultCode == MainActivity.RESULT_OK && requestCode == 1) {
             try {
                 final Uri imageUri = data.getData();
-                imgpath=imageUri;
+                imgpath = imageUri;
+                pictureUri = imageUri;
                 final Bitmap selectedImage = decodeSampledBitmapFromStream(getContext(), imageUri, 200, 200);
                 profileImage = selectedImage;
                 imgViewProfileImage.setImageBitmap(selectedImage);
@@ -242,44 +253,61 @@ public class EditProfile extends Fragment {
         }
     }
 
-    private boolean isValid(String email) {
-        String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
-        return email.matches(regex);
+    private void changeData() {
+        if (!normalUser.getName().equals(edtTextEditProfileName.getText().toString())) {
+            reference.child(user.getUid()).child("name").setValue(edtTextEditProfileName.getText().toString());
+            normalUser.setName(edtTextEditProfileName.getText().toString());
+            edit.putString(Login.LOGIN_NAME, edtTextEditProfileName.getText().toString());
+            edit.apply();
+        }
+        if (!normalUser.getEmail().equals(edtTextEditProfileEmail.getText().toString())) {
+            reference.child(user.getUid()).child("email").setValue(edtTextEditProfileName.getText().toString());
+            normalUser.setEmail(edtTextEditProfileEmail.getText().toString());
+            edit.putString(Login.LOGIN_EMAIL, edtTextEditProfileEmail.getText().toString());
+            edit.apply();
+        }
+        if (!normalUser.getImageUrl().equals(pictureUri.toString())) {
+            uploadToFirebase(pictureUri);
+            normalUser.setImageUrl(pictureUri.toString());
+            edit.putString(Login.LOGIN_PICTURE, pictureUri.toString());
+            edit.apply();
+        }
     }
 
+    private void uploadToFirebase(Uri uri) {
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+        final StorageReference fileRef = storageReference.child(System.currentTimeMillis() + "." + getFileExtension(uri));
+        fileRef.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        reference.child(user.getUid()).child("imageUrl").setValue(uri.toString());
+                        progressBar.setVisibility(View.INVISIBLE);
+                        Toast.makeText(getActivity(), "Uploaded Successfully", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(getContext(), "Uploading Failed !!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-    private boolean isNameChanged(View view) {
-        if(!name.equals(edtTextName.getText().toString()))
-        {
-             reference.child(user.getUid()).child("accName").setValue(edtTextName.getText().toString());
-             return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    private boolean isEmailChanged(View view) {
-        if(!email.equals(edtTextEmail.getText().toString()))
-        {
-            reference.child(user.getUid()).child("accEmail").setValue(edtTextEmail.getText().toString());
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    private boolean isPasswordChanged(View view) {
-        if(!edtOldPassword.equals(edtTextPassword.getText().toString()))
-        {
-            reference.child(user.getUid()).child("accPassword").setValue(edtTextPassword.getText().toString());
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+    private String getFileExtension(Uri mUri) {
+
+        ContentResolver cr = getContext().getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(cr.getType(mUri));
     }
 
 }
