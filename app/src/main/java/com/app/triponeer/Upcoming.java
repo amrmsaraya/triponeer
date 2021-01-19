@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,9 +39,10 @@ import java.util.ArrayList;
 import javax.net.ssl.HttpsURLConnection;
 
 
-public class Upcoming extends Fragment {
+public class Upcoming extends Fragment implements OnUpcomingEmptyList {
     RecyclerView rvUpcoming;
     UpcomingAdapter upcomingAdapter;
+    public static LinearLayout upcomingEmptyLayout;
     ArrayList<Trip> upcomingTrips;
     Trip trip;
     Button btnAdd;
@@ -61,6 +63,7 @@ public class Upcoming extends Fragment {
         View view = inflater.inflate(R.layout.upcoming, container, false);
         btnAdd = view.findViewById(R.id.btnAddTrip);
         swipeRefreshLayoutUpcoming = view.findViewById(R.id.swipeRefreshLayoutUpcoming);
+        upcomingEmptyLayout = view.findViewById(R.id.upcomingEmptyLayout);
         swipeRefreshLayoutUpcoming.setColorSchemeResources(R.color.colorPrimary);
         normalUser = NormalUser.getInstance();
         socialMediaUser = SocialMediaUser.getInstance();
@@ -190,12 +193,15 @@ public class Upcoming extends Fragment {
                     if (trip != null) {
                         upcomingTrips.add(trip);
                     }
-                    upcomingAdapter = new UpcomingAdapter(getContext());
+                    upcomingAdapter = new UpcomingAdapter(getContext(), Upcoming.this);
                     if (!upcomingTrips.isEmpty()) {
                         rvUpcoming.setAdapter(upcomingAdapter);
                         rvUpcoming.setLayoutManager(new LinearLayoutManager(getContext()));
                         System.out.println(trip);
                     }
+                }
+                if (!upcomingTrips.isEmpty()) {
+                    upcomingEmptyLayout.setVisibility(View.INVISIBLE);
                 }
                 setDataSource();
             }
@@ -205,5 +211,10 @@ public class Upcoming extends Fragment {
 
             }
         });
+    }
+
+    @Override
+    public void emptyList() {
+        upcomingEmptyLayout.setVisibility(View.VISIBLE);
     }
 }

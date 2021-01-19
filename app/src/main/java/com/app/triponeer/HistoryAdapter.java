@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +25,12 @@ import java.util.ArrayList;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
     ArrayList<Trip> historyTrips;
+    public OnHistoryEmptyList onHistoryEmptyList;
+    Fragment fragment;
+
+    public HistoryAdapter(Fragment fragment) {
+        this.fragment = fragment;
+    }
 
     @NonNull
     @Override
@@ -31,6 +38,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.history_items, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
+        onHistoryEmptyList = (OnHistoryEmptyList) fragment;
         return viewHolder;
     }
 
@@ -45,6 +53,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         holder.tvHistoryStatus.setText(historyTrips.get(position).getStatus());
         holder.tvHistoryType.setText(historyTrips.get(position).getType());
         holder.tvHistoryDistance.setText(String.format("%.1f", historyTrips.get(position).getDistance()) + " km");
+
 
         holder.btnHistoryNote.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,6 +93,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
                             public void onComplete(@NonNull Task<Void> task) {
                                 historyTrips.remove(position);
                                 notifyDataSetChanged();
+                                if (historyTrips.isEmpty()) {
+                                    onHistoryEmptyList.emptyList();
+                                }
                             }
                         });
                         if (holder.dialog != null) {
@@ -182,4 +194,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         }
     }
 
+}
+
+interface OnHistoryEmptyList {
+    void emptyList();
 }

@@ -19,6 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,9 +36,14 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
     RecyclerView recyclerViewNotes;
     NotesAdapter notesAdapter;
     Context context;
+    public OnUpcomingEmptyList onUpcomingEmptyList;
+    Fragment fragment;
 
-    public UpcomingAdapter(Context context) {
+
+    public UpcomingAdapter(Context context, Fragment fragment) {
         this.context = context;
+        this.fragment = fragment;
+
     }
 
     @NonNull
@@ -46,6 +52,7 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.upcoming_items, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
+        onUpcomingEmptyList = (OnUpcomingEmptyList) fragment;
         return viewHolder;
     }
 
@@ -89,6 +96,9 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 upcomingTrips.remove(position);
                                                 notifyDataSetChanged();
+                                                if (upcomingTrips.isEmpty()) {
+                                                    onUpcomingEmptyList.emptyList();
+                                                }
                                             }
                                         });
                                     }
@@ -142,6 +152,30 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
                 }
             }
         });
+
+        holder.btnUpcomingDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                upcomingTrips.get(position).setStatus("Completed");
+                FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                        .getCurrentUser().getUid()).child("trips").child("upcoming").child(upcomingTrips.get(position).getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                .getCurrentUser().getUid()).child("trips").child("history").child(upcomingTrips.get(position).getName()).setValue(upcomingTrips.get(position)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                upcomingTrips.remove(position);
+                                notifyDataSetChanged();
+                                if (upcomingTrips.isEmpty()) {
+                                    onUpcomingEmptyList.emptyList();
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -155,7 +189,7 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
         ConstraintLayout clExpandable;
         CardView cvUpcoming;
         ImageButton btnUpcomingMenu;
-        Button btnStartNavigation, btnUpcomingNote;
+        Button btnStartNavigation, btnUpcomingNote, btnUpcomingDone;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -172,6 +206,7 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
             btnUpcomingMenu = itemView.findViewById(R.id.btnUpcomingMenu);
             btnStartNavigation = itemView.findViewById(R.id.btnStartNavigation);
             btnUpcomingNote = itemView.findViewById(R.id.btnUpcomingNote);
+            btnUpcomingDone = itemView.findViewById(R.id.btnUpcomingDone);
 
 
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -199,3 +234,6 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
     }
 }
 
+interface OnUpcomingEmptyList {
+    void emptyList();
+}

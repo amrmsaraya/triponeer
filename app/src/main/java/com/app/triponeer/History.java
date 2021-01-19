@@ -13,6 +13,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,11 +26,12 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 
-public class History extends Fragment {
+public class History extends Fragment implements OnHistoryEmptyList {
     RecyclerView rvHistory;
     HistoryAdapter historyAdapter;
     ArrayList<Trip> historyTrips;
     SwipeRefreshLayout swipeRefreshLayoutHistory;
+    public static LinearLayout historyEmptyLayout;
     ArrayList<String> notes;
     private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseUser user;
@@ -46,6 +48,7 @@ public class History extends Fragment {
 
         rvHistory = view.findViewById(R.id.rvHistory);
         swipeRefreshLayoutHistory = view.findViewById(R.id.swipeRefreshLayoutHistory);
+        historyEmptyLayout = view.findViewById(R.id.historyEmptyLayout);
         swipeRefreshLayoutHistory.setColorSchemeResources(R.color.colorPrimary);
         historyTrips = new ArrayList<>();
         notes = new ArrayList<>();
@@ -90,11 +93,14 @@ public class History extends Fragment {
                     if (trip != null) {
                         historyTrips.add(trip);
                     }
-                    historyAdapter = new HistoryAdapter();
+                    historyAdapter = new HistoryAdapter(History.this);
                     if (!historyTrips.isEmpty()) {
                         rvHistory.setAdapter(historyAdapter);
                         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
                     }
+                }
+                if (!historyTrips.isEmpty()) {
+                    historyEmptyLayout.setVisibility(View.INVISIBLE);
                 }
                 setDataSource();
             }
@@ -106,4 +112,8 @@ public class History extends Fragment {
         });
     }
 
+    @Override
+    public void emptyList() {
+        historyEmptyLayout.setVisibility(View.VISIBLE);
+    }
 }
