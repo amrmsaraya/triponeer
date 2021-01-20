@@ -53,8 +53,9 @@ public class History extends Fragment implements OnHistoryEmptyList {
         historyTrips = new ArrayList<>();
         notes = new ArrayList<>();
         user = mAuth.getCurrentUser();
-        trip = new Trip();
         reference = FirebaseDatabase.getInstance().getReference("Users");
+        reference.keepSynced(true);
+        trip = new Trip();
 
         getData();
 
@@ -93,7 +94,7 @@ public class History extends Fragment implements OnHistoryEmptyList {
                     if (trip != null) {
                         historyTrips.add(trip);
                     }
-                    historyAdapter = new HistoryAdapter(History.this);
+                    historyAdapter = new HistoryAdapter(getContext(), History.this);
                     if (!historyTrips.isEmpty()) {
                         rvHistory.setAdapter(historyAdapter);
                         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));

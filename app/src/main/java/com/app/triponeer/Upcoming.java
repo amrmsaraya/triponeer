@@ -20,8 +20,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -70,22 +73,26 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         user = mAuth.getCurrentUser();
         trip = new Trip();
         reference = FirebaseDatabase.getInstance().getReference("Users");
+        reference.keepSynced(true);
         saveDataToNormalUserClass();
         setBtnAddAction();
 
         rvUpcoming = view.findViewById(R.id.rvUpcoming);
         upcomingTrips = new ArrayList<>();
 
-        getData();
+        if (reference != null) {
+            getData();
+        }
 
         swipeRefreshLayoutUpcoming.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getData();
+                if (reference != null) {
+                    getData();
+                }
                 swipeRefreshLayoutUpcoming.setRefreshing(false);
             }
         });
-
 
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
@@ -106,9 +113,25 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.fragment_enter_right_to_left, R.anim.fragment_exit_to_left)
-                        .replace(R.id.fragment_container, new AddTrip("new")).addToBackStack(null).commit();
+
+                FirebaseDatabase.getInstance().getReference(".info/connected").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        boolean connected = snapshot.getValue(Boolean.class);
+                        if (connected) {
+                            getActivity().getSupportFragmentManager().beginTransaction()
+                                    .setCustomAnimations(R.anim.fragment_enter_right_to_left, R.anim.fragment_exit_to_left)
+                                    .replace(R.id.fragment_container, new AddTrip("new")).addToBackStack(null).commit();
+                        } else {
+                            Toast.makeText(getContext(), "You're offline,\nconnect to internet and try again", Toast.LENGTH_SHORT).show();
+                            FirebaseDatabase.getInstance().purgeOutstandingWrites();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
             }
         });
     }
@@ -119,7 +142,6 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
             if (!saving.getString(Login.LOGIN_NAME, "").isEmpty() &&
                     !saving.getString(Login.LOGIN_EMAIL, "").isEmpty() &&
                     !saving.getString(Login.LOGIN_PICTURE, "").isEmpty()) {
-                Log.i("MainActivity", "SharePref: " + saving.getString(Login.LOGIN_NAME, ""));
                 normalUser.setName(saving.getString(Login.LOGIN_NAME, ""));
                 normalUser.setEmail(saving.getString(Login.LOGIN_EMAIL, ""));
                 normalUser.setImageUrl(saving.getString(Login.LOGIN_PICTURE, ""));

@@ -139,6 +139,7 @@ public class Login extends AppCompatActivity {
 
                                         // Get data from Realtime database
                                         reference = FirebaseDatabase.getInstance().getReference("Users");
+                                        reference.keepSynced(true);
                                         reference.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(@NonNull DataSnapshot snapshot) {

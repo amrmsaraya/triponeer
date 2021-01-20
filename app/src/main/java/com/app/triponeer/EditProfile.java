@@ -279,8 +279,9 @@ public class EditProfile extends Fragment {
             edit.putString(Login.LOGIN_EMAIL, edtTextEditProfileEmail.getText().toString());
             edit.apply();
         }
-        uploadToFirebase(pictureUri);
-
+        if (pictureUri != null) {
+            uploadToFirebase(pictureUri);
+        }
 
     }
 

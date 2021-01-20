@@ -20,8 +20,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.login.LoginManager;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.FileInputStream;
@@ -70,13 +76,29 @@ public class Profile extends Fragment {
         btnEditProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (saving.getBoolean(Login.IS_LOGIN, true)) {
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                            .setCustomAnimations(R.anim.fragment_enter_right_to_left, R.anim.fragment_exit_to_left)
-                            .replace(R.id.fragment_container, new EditProfile()).commit();
-                } else {
-                    Toast.makeText(getContext(), "Please Change your data from your social media account!", Toast.LENGTH_SHORT).show();
-                }
+
+                FirebaseDatabase.getInstance().getReference(".info/connected").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        boolean connected = snapshot.getValue(Boolean.class);
+                        if (connected) {
+                            if (saving.getBoolean(Login.IS_LOGIN, true)) {
+                                getActivity().getSupportFragmentManager().beginTransaction()
+                                        .setCustomAnimations(R.anim.fragment_enter_right_to_left, R.anim.fragment_exit_to_left)
+                                        .replace(R.id.fragment_container, new EditProfile()).commit();
+                            } else {
+                                Toast.makeText(getContext(), "Please Change your data from your social media account!", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(getContext(), "You're offline,\nconnect to internet and try again", Toast.LENGTH_SHORT).show();
+                            FirebaseDatabase.getInstance().purgeOutstandingWrites();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
             }
         });
     }
@@ -123,6 +145,7 @@ public class Profile extends Fragment {
                     edit.putBoolean(Login.IS_LOGIN, false);
                     edit.putBoolean(Login.IS_FACEBOOK_LOGIN, false);
                     edit.putBoolean(Login.IS_GOOGLE_LOGIN, false);
+                    edit.putBoolean(Login.IS_NEW_PICTURE, true);
                 } catch (Exception e) {
                     Log.i("Profile", "onComplete: " + e);
                 }

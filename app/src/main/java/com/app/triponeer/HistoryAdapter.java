@@ -1,6 +1,7 @@
 package com.app.triponeer;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.view.LayoutInflater;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -19,7 +21,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -27,9 +32,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     ArrayList<Trip> historyTrips;
     public OnHistoryEmptyList onHistoryEmptyList;
     Fragment fragment;
+    Context context;
 
-    public HistoryAdapter(Fragment fragment) {
+    public HistoryAdapter(Context context, Fragment fragment) {
         this.fragment = fragment;
+        this.context = context;
     }
 
     @NonNull
@@ -83,21 +90,36 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
                 holder.btnConfirmDeleteTrip = dialogView.findViewById(R.id.btnConfirmDeleteTrip);
                 holder.btnCancelDeleteTrip = dialogView.findViewById(R.id.btnCancelDeleteTrip);
 
-
                 holder.btnConfirmDeleteTrip.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
-                                .getCurrentUser().getUid()).child("trips").child("history").child(historyTrips.get(position).getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        FirebaseDatabase.getInstance().getReference(".info/connected").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                historyTrips.remove(position);
-                                notifyDataSetChanged();
-                                if (historyTrips.isEmpty()) {
-                                    onHistoryEmptyList.emptyList();
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                boolean connected = snapshot.getValue(Boolean.class);
+                                if (connected) {
+                                    FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                            .getCurrentUser().getUid()).child("trips").child("history").child(historyTrips.get(position).getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            historyTrips.remove(position);
+                                            notifyDataSetChanged();
+                                            if (historyTrips.isEmpty()) {
+                                                onHistoryEmptyList.emptyList();
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    Toast.makeText(context, "You're offline,\nconnect to internet and try again", Toast.LENGTH_SHORT).show();
+                                    FirebaseDatabase.getInstance().purgeOutstandingWrites();
                                 }
                             }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                            }
                         });
+
                         if (holder.dialog != null) {
                             holder.dialog.dismiss();
                         }
