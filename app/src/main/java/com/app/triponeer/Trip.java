@@ -1,31 +1,45 @@
 package com.app.triponeer;
 
+import android.os.Parcelable;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 
+
 public class Trip {
-    String name;
-    String Description;
-    String sourceName;
-    String destinationName;
-    String sourceAddress;
-    String destinationAddress;
-    String status;
-    String type;
-    double distance;
-    double sourceLat;
-    double sourceLong;
-    double destLat;
-    double destLong;
-    String date;
-    String time;
-    int day;
-    int month;
-    int year;
-    int hour;
-    int minute;
-    String repeatPattern;
-    ArrayList<String> repeatDays;
-    ArrayList<String> notes;
+    private String name;
+    private String Description;
+    private String sourceName;
+    private String destinationName;
+    private String sourceAddress;
+    private String destinationAddress;
+    private String status;
+    private String type;
+    private double distance;
+    private double sourceLat;
+    private double sourceLong;
+    private double destLat;
+    private double destLong;
+    private String date;
+    private String time;
+    private int day;
+    private int month;
+    private int year;
+    private int hour;
+    private int minute;
+
+    private String roundDate;
+    private String roundTime;
+    private int roundYear;
+    private int roundMonth;
+    private int roundDay;
+    private int roundHour;
+    private int roundMinute;
+    private boolean isRoundDone;
+
+    private String repeatPattern;
+    private ArrayList<String> repeatDays;
+    private ArrayList<String> notes;
 
     public Trip() {
         name = "";
@@ -34,7 +48,7 @@ public class Trip {
         destinationAddress = "";
         sourceName = "";
         destinationName = "";
-        status = "";
+        status = "Upcoming";
         sourceLat = 0;
         sourceLong = 0;
         destLat = 0;
@@ -47,6 +61,14 @@ public class Trip {
         year = 0;
         hour = 0;
         minute = 0;
+        roundDate = "";
+        roundTime = "";
+        roundYear = 0;
+        roundMonth = 0;
+        roundDay = 0;
+        roundHour = 0;
+        roundMinute = 0;
+        isRoundDone = false;
         repeatPattern = "";
         distance = 0;
         notes = new ArrayList<String>();
@@ -212,4 +234,104 @@ public class Trip {
         return repeatDays;
     }
 
+    public String getRoundDate() {
+        return roundDate;
+    }
+
+    public void setRoundDate(String roundDate) {
+        this.roundDate = roundDate;
+    }
+
+    public String getRoundTime() {
+        return roundTime;
+    }
+
+    public void setRoundTime(String roundTime) {
+        this.roundTime = roundTime;
+    }
+
+    public int getRoundYear() {
+        return roundYear;
+    }
+
+    public void setRoundYear(int roundYear) {
+        this.roundYear = roundYear;
+    }
+
+    public int getRoundMonth() {
+        return roundMonth;
+    }
+
+    public void setRoundMonth(int roundMonth) {
+        this.roundMonth = roundMonth;
+    }
+
+    public int getRoundDay() {
+        return roundDay;
+    }
+
+    public void setRoundDay(int roundDay) {
+        this.roundDay = roundDay;
+    }
+
+    public int getRoundHour() {
+        return roundHour;
+    }
+
+    public void setRoundHour(int roundHour) {
+        this.roundHour = roundHour;
+    }
+
+    public int getRoundMinute() {
+        return roundMinute;
+    }
+
+    public void setRoundMinute(int roundMinute) {
+        this.roundMinute = roundMinute;
+    }
+
+    public boolean isRoundDone() {
+        return isRoundDone;
+    }
+
+    public void setRoundDone(boolean roundDone) {
+        isRoundDone = roundDone;
+    }
+
+    public void swapRound() {
+        // swap location names
+        String temp;
+        temp = sourceName;
+        sourceName = destinationName;
+        destinationName = temp;
+
+        // swap location address
+        temp = sourceAddress;
+        sourceAddress = destinationAddress;
+        destinationAddress = temp;
+
+        // swap latitudes
+        double temp1;
+        temp1 = sourceLat;
+        sourceLat = destLat;
+        destLat = temp1;
+
+        // swap longitudes
+        temp1 = sourceLong;
+        sourceLong = destLong;
+        destLong = temp1;
+
+        // round to normal
+        time = roundTime;
+        date = roundDate;
+        hour = roundHour;
+        minute = roundMinute;
+        year = roundYear;
+        month = roundMonth;
+        day = roundDay;
+
+        isRoundDone = true;
+
+
+    }
 }

@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 
-public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.OnApplyRepeat {
+public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.OnApplyRepeat, RoundTrip.OnRoundTrip {
     EditText edtTextTripName;
     EditText edtTextTripDescription;
     EditText edtTextSource;
@@ -67,6 +67,14 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
     int selected_day;
     int selected_hour;
     int selected_minute;
+
+    String roundDate;
+    String roundTime;
+    int roundSelectedYear;
+    int roundSelectedMonth;
+    int roundSelectedDay;
+    int roundSelectedHour;
+    int roundSelectedMinute;
 
     LatLng sourceLatLng;
     LatLng destLatLng;
@@ -109,6 +117,14 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
             selected_day = trip.getDay();
             selected_hour = trip.getHour();
             selected_minute = trip.getMinute();
+
+            roundDate = trip.getRoundDate();
+            roundTime = trip.getRoundTime();
+            roundSelectedHour = trip.getRoundHour();
+            roundSelectedMinute = trip.getRoundMinute();
+            roundSelectedYear = trip.getRoundYear();
+            roundSelectedMonth = trip.getRoundMonth();
+            roundSelectedDay = trip.getRoundDay();
             sourceLatLng = new LatLng(trip.getSourceLat(), trip.getSourceLong());
             destLatLng = new LatLng(trip.getDestLat(), trip.getDestLong());
             notes.addAll(trip.getNotes());
@@ -190,6 +206,11 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 type = parent.getAdapter().getItem(position).toString();
+                if (type.equals("Round")) {
+                    RoundTrip roundTrip = new RoundTrip();
+                    roundTrip.setTargetFragment(AddTrip.this, 1);
+                    roundTrip.show(getFragmentManager(), "RoundTrip");
+                }
             }
 
             @Override
@@ -262,6 +283,13 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                         trip.setStatus("upcoming");
                         trip.setType(type);
                         trip.setDistance(sourceLatLng.distanceTo(destLatLng) / 1000);
+                        trip.setRoundDate(roundDate);
+                        trip.setRoundTime(roundTime);
+                        trip.setRoundHour(roundSelectedHour);
+                        trip.setRoundMinute(roundSelectedMinute);
+                        trip.setRoundYear(roundSelectedYear);
+                        trip.setRoundMonth(roundSelectedMonth);
+                        trip.setRoundDay(roundSelectedDay);
 
                         progressBarAddTrip.setVisibility(View.VISIBLE);
                         FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
@@ -295,6 +323,13 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                         modifiedTrip.setStatus("upcoming");
                         modifiedTrip.setType(type);
                         modifiedTrip.setDistance(sourceLatLng.distanceTo(destLatLng) / 1000);
+                        modifiedTrip.setRoundDate(roundDate);
+                        modifiedTrip.setRoundTime(roundTime);
+                        modifiedTrip.setRoundHour(roundSelectedHour);
+                        modifiedTrip.setRoundMinute(roundSelectedMinute);
+                        modifiedTrip.setRoundYear(roundSelectedYear);
+                        modifiedTrip.setRoundMonth(roundSelectedMonth);
+                        modifiedTrip.setRoundDay(roundSelectedDay);
 
                         progressBarAddTrip.setVisibility(View.VISIBLE);
                         FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
@@ -433,5 +468,16 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
     @Override
     public void sendInput(ArrayList<String> input) {
         repeatedDays = input;
+    }
+
+    @Override
+    public void roundData(String date, String time, int hour, int minute, int year, int month, int day) {
+        this.roundDate = date;
+        this.roundTime = time;
+        this.roundSelectedYear = year;
+        this.roundSelectedMonth = month;
+        this.roundSelectedDay = day;
+        this.roundSelectedHour = hour;
+        this.roundSelectedMinute = minute;
     }
 }

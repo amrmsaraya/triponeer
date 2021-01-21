@@ -93,7 +93,8 @@ public class EditProfile extends Fragment {
                 if (edtTextEditProfileName.getText().toString().isEmpty() ||
                         edtTextEditProfileEmail.getText().toString().isEmpty() ||
                         edtTextEditProfilePassword.getText().toString().isEmpty() ||
-                        edtTextEditProfileConfirmPassword.getText().toString().isEmpty()
+                        edtTextEditProfileConfirmPassword.getText().toString().isEmpty() ||
+                        edtTextEditProfileCurrentPassword.getText().toString().isEmpty()
                 ) {
                     if (edtTextEditProfileName.getText().toString().isEmpty()) {
                         edtTextEditProfileName.setError("Full Name");
@@ -111,6 +112,7 @@ public class EditProfile extends Fragment {
                         edtTextEditProfileConfirmPassword.setError("Confirm Password");
                         edtTextEditProfileConfirmPassword.requestFocus();
                     }
+
 
                 } else if (!Patterns.EMAIL_ADDRESS.matcher(edtTextEditProfileEmail.getText().toString()).matches()) {
                     edtTextEditProfileEmail.setError("Invalid Email!");
@@ -162,6 +164,8 @@ public class EditProfile extends Fragment {
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(getContext(), "Wrong password!", Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.INVISIBLE);
                         }
                     });
                 }

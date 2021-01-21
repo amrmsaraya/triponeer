@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,7 +33,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -48,6 +48,7 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
     private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseUser user;
     private DatabaseReference reference;
+    Trip trip;
 
     public UpcomingAdapter(Context context, Fragment fragment) {
         this.context = context;
@@ -145,6 +146,7 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
 
                                     @Override
                                     public void onCancelled(@NonNull DatabaseError error) {
+                                        System.out.println(error.toString());
                                     }
                                 });
                                 return true;
@@ -200,39 +202,82 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
         holder.btnUpcomingDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FirebaseDatabase.getInstance().getReference(".info/connected").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        boolean connected = snapshot.getValue(Boolean.class);
-                        if (connected) {
-                            upcomingTrips.get(position).setStatus("Completed");
-                            FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
-                                    .getCurrentUser().getUid()).child("trips").child("upcoming").child(upcomingTrips.get(position).getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
-                                            .getCurrentUser().getUid()).child("trips").child("history").child(upcomingTrips.get(position).getName()).setValue(upcomingTrips.get(position)).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            upcomingTrips.remove(position);
-                                            notifyDataSetChanged();
-                                            if (upcomingTrips.isEmpty()) {
-                                                onUpcomingEmptyList.emptyList();
+                if (upcomingTrips.get(position).getType().equals("Round") && !upcomingTrips.get(position).isRoundDone()) {
+                    FirebaseDatabase.getInstance().getReference(".info/connected").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            boolean connected = snapshot.getValue(Boolean.class);
+                            if (connected) {
+                                upcomingTrips.get(position).setStatus("Completed");
+                                reference.child(user.getUid()).child("trips").child("history")
+                                        .child(upcomingTrips.get(position).getName()).
+                                        setValue(upcomingTrips.get(position))
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
                                             }
-                                        }
-                                    });
-                                }
-                            });
-                        } else {
-                            Toast.makeText(context, "You're offline,\nconnect to internet and try again", Toast.LENGTH_SHORT).show();
-                            FirebaseDatabase.getInstance().purgeOutstandingWrites();
-                        }
-                    }
+                                        });
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                    }
-                });
+                                trip = new Trip();
+                                trip = upcomingTrips.get(position);
+                                trip.swapRound();
+                                trip.setStatus("Upcoming");
+                                Log.i("UpcomingAdapter", trip.getDestinationName());
+                                reference.child(user.getUid()).child("trips").child("upcoming").child(trip.getName()).setValue(trip).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show();
+                                        onUpcomingEmptyList.update();
+                                        if (upcomingTrips.isEmpty()) {
+                                            onUpcomingEmptyList.emptyList();
+                                        }
+                                    }
+                                });
+                            } else {
+                                Toast.makeText(context, "You're offline,\nconnect to internet and try again", Toast.LENGTH_SHORT).show();
+                                FirebaseDatabase.getInstance().purgeOutstandingWrites();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                        }
+                    });
+                } else {
+                    FirebaseDatabase.getInstance().getReference(".info/connected").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            boolean connected = snapshot.getValue(Boolean.class);
+                            if (connected) {
+                                upcomingTrips.get(position).setStatus("Completed");
+                                FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                        .getCurrentUser().getUid()).child("trips").child("upcoming").child(upcomingTrips.get(position).getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                                .getCurrentUser().getUid()).child("trips").child("history").child(upcomingTrips.get(position).getName()).setValue(upcomingTrips.get(position)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                upcomingTrips.remove(position);
+                                                notifyDataSetChanged();
+                                                if (upcomingTrips.isEmpty()) {
+                                                    onUpcomingEmptyList.emptyList();
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            } else {
+                                Toast.makeText(context, "You're offline,\nconnect to internet and try again", Toast.LENGTH_SHORT).show();
+                                FirebaseDatabase.getInstance().purgeOutstandingWrites();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                        }
+                    });
+                }
             }
         });
     }
@@ -263,7 +308,7 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
             clExpandable = itemView.findViewById(R.id.expandableHistory);
             cvUpcoming = itemView.findViewById(R.id.cvUpcoming);
             btnUpcomingMenu = itemView.findViewById(R.id.btnUpcomingMenu);
-            btnStartNavigation = itemView.findViewById(R.id.btnStartNavigation);
+            btnStartNavigation = itemView.findViewById(R.id.btnAlarmStart);
             btnUpcomingNote = itemView.findViewById(R.id.btnUpcomingNote);
             btnUpcomingDone = itemView.findViewById(R.id.btnUpcomingDone);
 
@@ -295,4 +340,6 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
 
 interface OnUpcomingEmptyList {
     void emptyList();
+
+    void update();
 }

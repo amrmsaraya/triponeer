@@ -2,6 +2,10 @@ package com.app.triponeer;
 
 import android.annotation.SuppressLint;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,7 +41,12 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -80,16 +89,18 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         rvUpcoming = view.findViewById(R.id.rvUpcoming);
         upcomingTrips = new ArrayList<>();
 
-        if (reference != null) {
+        if (reference != null && user !=null) {
             getData();
         }
+
 
         swipeRefreshLayoutUpcoming.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (reference != null) {
+                if (reference != null && user !=null) {
                     getData();
                 }
+
                 swipeRefreshLayoutUpcoming.setRefreshing(false);
             }
         });
@@ -214,6 +225,12 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
                     trip = dataSnapshot.getValue(Trip.class);
                     if (trip != null) {
                         upcomingTrips.add(trip);
+                        setAlarm(trip.getName(), trip.getDescription(),
+                                trip.getDate(), trip.getHour() + ":" + trip.getMinute(),
+                                trip.getSourceName(), trip.getDestinationName(), trip.getType(),
+                                String.format("%.1f", trip.getDistance()),
+                                trip.getDestLat(), trip.getDestLong(),
+                                trip.getNotes());
                     }
                     upcomingAdapter = new UpcomingAdapter(getContext(), Upcoming.this);
                     if (!upcomingTrips.isEmpty()) {
@@ -238,5 +255,45 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
     @Override
     public void emptyList() {
         upcomingEmptyLayout.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void update() {
+        getData();
+    }
+
+    private void setAlarm(String name, String description,
+                          String date, String time, String source,
+                          String destination, String type, String distance,
+                          double destLat, double destLong, ArrayList<String> notes) {
+        AlarmManager am = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(getContext().getApplicationContext(), AlarmBroadcast.class);
+        intent.putExtra("name", name);
+        intent.putExtra("description", description);
+        intent.putExtra("date", date);
+        intent.putExtra("time", time);
+        intent.putExtra("source", source);
+        intent.putExtra("destination", destination);
+        intent.putExtra("type", type);
+        intent.putExtra("distance", distance);
+        intent.putExtra("destLat", destLat);
+        intent.putExtra("destLong", destLong);
+        intent.putStringArrayListExtra("notes", notes);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                getContext().getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        String dateNTime = date + " " + time;
+        DateFormat formatter = new SimpleDateFormat("d-M-yyyy H:mm");
+        Calendar c = Calendar.getInstance();
+        try {
+            Date date1 = formatter.parse(dateNTime);
+            if (c.getTimeInMillis() < date1.getTime()) {
+                am.set(AlarmManager.RTC_WAKEUP, date1.getTime(), pendingIntent);
+            }
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }

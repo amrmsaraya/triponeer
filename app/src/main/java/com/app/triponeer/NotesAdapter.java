@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,6 +34,13 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
 
         holder.checkBoxNote.setText(notes.get(position));
+        holder.btnDeleteNote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                notes.remove(position);
+                notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
@@ -42,10 +51,12 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         CheckBox checkBoxNote;
+        ImageView btnDeleteNote;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             checkBoxNote = itemView.findViewById(R.id.checkBoxNote);
+            btnDeleteNote = itemView.findViewById(R.id.btnDeleteNote);
         }
     }
 }

@@ -15,23 +15,32 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Triponeer">
         <service
-            android:name="com.app.triponeer.Bubble"
+            android:name=".AlarmService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <receiver
+            android:name=".AlarmBroadcast"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name="com.app.triponeer.Splash">
+        <service
+            android:name=".Bubble"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.app.triponeer.Login" />
-        <activity android:name="com.app.triponeer.SignUp" />
-        <activity android:name=".ForgetPassword"></activity>
-
+        <activity android:name=".Login" />
+        <activity android:name=".SignUp" />
+        <activity android:name=".ForgetPassword" />
         <activity
-            android:name="com.app.triponeer.MainActivity"
+            android:name=".MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <meta-data
