@@ -196,9 +196,9 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
                     v.getContext().startService(new Intent(v.getContext(), Bubble.class)
                             .putStringArrayListExtra("notes", upcomingTrips.get(position).getNotes()));
                 }
+                holder.btnUpcomingDone.performClick();
             }
         });
-
         holder.btnUpcomingDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -254,17 +254,17 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
                                         .getCurrentUser().getUid()).child("trips").child("upcoming").child(upcomingTrips.get(position).getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
-                                        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
-                                                .getCurrentUser().getUid()).child("trips").child("history").child(upcomingTrips.get(position).getName()).setValue(upcomingTrips.get(position)).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                upcomingTrips.remove(position);
-                                                notifyDataSetChanged();
-                                                if (upcomingTrips.isEmpty()) {
-                                                    onUpcomingEmptyList.emptyList();
-                                                }
-                                            }
-                                        });
+                                    }
+                                });
+                                FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()
+                                        .getCurrentUser().getUid()).child("trips").child("history").child(upcomingTrips.get(position).getName()).setValue(upcomingTrips.get(position)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        upcomingTrips.remove(position);
+                                        notifyDataSetChanged();
+                                        if (upcomingTrips.isEmpty()) {
+                                            onUpcomingEmptyList.emptyList();
+                                        }
                                     }
                                 });
                             } else {
@@ -284,7 +284,10 @@ public class UpcomingAdapter extends RecyclerView.Adapter<UpcomingAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return upcomingTrips.size();
+        if (upcomingTrips != null) {
+            return upcomingTrips.size();
+        }
+        return 0;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

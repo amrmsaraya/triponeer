@@ -1,5 +1,6 @@
 package com.app.triponeer;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -35,8 +37,12 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete;
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 
 public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.OnApplyRepeat, RoundTrip.OnRoundTrip {
@@ -56,8 +62,14 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
     RecyclerView recyclerView;
     Button btnSaveAddTrip;
     ProgressBar progressBarAddTrip;
+
     Trip trip;
     Trip modifiedTrip;
+
+    String name;
+    String description;
+    String sourceName;
+    String destName;
     String job;
     String type;
     String date;
@@ -80,8 +92,6 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
     LatLng destLatLng;
     String sourceAddress;
     String destAddress;
-    String sourceName;
-    String destName;
 
     ArrayList<String> notes;
     NotesAdapter notesAdapter;
@@ -110,6 +120,8 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
             edtTextTripDescription.setText(trip.getDescription());
             edtTextSource.setText(trip.getSourceName());
             edtTextDestination.setText(trip.getDestinationName());
+
+            type = trip.getType();
             date = trip.getDate();
             time = trip.getTime();
             selected_year = trip.getYear();
@@ -117,7 +129,10 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
             selected_day = trip.getDay();
             selected_hour = trip.getHour();
             selected_minute = trip.getMinute();
-
+            sourceName = trip.getSourceName();
+            destName = trip.getDestinationName();
+            sourceAddress = trip.getSourceAddress();
+            destAddress = trip.getDestinationAddress();
             roundDate = trip.getRoundDate();
             roundTime = trip.getRoundTime();
             roundSelectedHour = trip.getRoundHour();
@@ -156,7 +171,6 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                 repeatDays.show(getFragmentManager(), "RepeatDays");
             }
         });
-
 
         edtTextSource.setFocusable(false);
         edtTextDestination.setFocusable(false);
@@ -244,11 +258,25 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                                selected_year = year;
-                                selected_month = monthOfYear + 1;
-                                selected_day = dayOfMonth;
-                                date = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
-                                txtViewDate.setText(date);
+                                Calendar c = Calendar.getInstance();
+                                String tmpDate = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
+                                DateFormat formatter = new SimpleDateFormat("d-M-yyyy");
+                                try {
+                                    Date date1 = formatter.parse(tmpDate);
+                                    if (c.getTimeInMillis() < date1.getTime()) {
+                                        selected_year = year;
+                                        selected_month = monthOfYear + 1;
+                                        selected_day = dayOfMonth;
+                                        date = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
+                                        txtViewDate.setText(date);
+                                    } else {
+                                        Toast.makeText(getContext(), "Please choose correct date!", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+
                             }
                         }, selected_year, selected_month, selected_day);
                 datePickerDialog.show();
@@ -259,12 +287,12 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
         btnSaveAddTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String name = edtTextTripName.getText().toString();
-                String description = edtTextTripDescription.getText().toString();
-                String source = edtTextSource.getText().toString();
-                String destination = edtTextDestination.getText().toString();
+                name = edtTextTripName.getText().toString();
+                description = edtTextTripDescription.getText().toString();
+                sourceName = edtTextSource.getText().toString();
+                destName = edtTextDestination.getText().toString();
 
-                if (name.isEmpty() || description.isEmpty() || source.isEmpty() || destination.isEmpty()) {
+                if (name.isEmpty() || description.isEmpty() || sourceName.isEmpty() || destName.isEmpty()) {
                     txtViewError.setText("* Please fill all fields");
                 } else {
                     if (job.equals("new")) {
@@ -330,6 +358,10 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                         modifiedTrip.setRoundYear(roundSelectedYear);
                         modifiedTrip.setRoundMonth(roundSelectedMonth);
                         modifiedTrip.setRoundDay(roundSelectedDay);
+                        modifiedTrip.setType(type);
+                        if (type.equals("Round")) {
+                            modifiedTrip.setRoundDone(false);
+                        }
 
                         progressBarAddTrip.setVisibility(View.VISIBLE);
                         FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance()

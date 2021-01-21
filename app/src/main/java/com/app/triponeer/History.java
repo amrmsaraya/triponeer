@@ -57,6 +57,10 @@ public class History extends Fragment implements OnHistoryEmptyList {
         reference.keepSynced(true);
         trip = new Trip();
 
+        historyAdapter = new HistoryAdapter(getContext(), History.this);
+        rvHistory.setAdapter(historyAdapter);
+        rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
+
         getData();
 
         swipeRefreshLayoutHistory.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -66,14 +70,6 @@ public class History extends Fragment implements OnHistoryEmptyList {
                 swipeRefreshLayoutHistory.setRefreshing(false);
             }
         });
-
-
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
 
         return view;
     }

@@ -87,9 +87,13 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         setBtnAddAction();
 
         rvUpcoming = view.findViewById(R.id.rvUpcoming);
+        upcomingAdapter = new UpcomingAdapter(getContext(), Upcoming.this);
+        rvUpcoming.setAdapter(upcomingAdapter);
+        rvUpcoming.setLayoutManager(new LinearLayoutManager(getContext()));
         upcomingTrips = new ArrayList<>();
 
-        if (reference != null && user !=null) {
+
+        if (reference != null && user != null) {
             getData();
         }
 
@@ -97,7 +101,7 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         swipeRefreshLayoutUpcoming.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (reference != null && user !=null) {
+                if (reference != null && user != null) {
                     getData();
                 }
 
@@ -105,12 +109,6 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
             }
         });
 
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
         return view;
     }
 
@@ -221,6 +219,7 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         reference.child(user.getUid()).child("trips").child("upcoming").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int id = 0;
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     trip = dataSnapshot.getValue(Trip.class);
                     if (trip != null) {
@@ -230,13 +229,7 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
                                 trip.getSourceName(), trip.getDestinationName(), trip.getType(),
                                 String.format("%.1f", trip.getDistance()),
                                 trip.getDestLat(), trip.getDestLong(),
-                                trip.getNotes());
-                    }
-                    upcomingAdapter = new UpcomingAdapter(getContext(), Upcoming.this);
-                    if (!upcomingTrips.isEmpty()) {
-                        rvUpcoming.setAdapter(upcomingAdapter);
-                        rvUpcoming.setLayoutManager(new LinearLayoutManager(getContext()));
-                        System.out.println(trip);
+                                trip.getNotes(), trip.getRepeatPattern(), trip.getRepeatDays(), id++);
                     }
                 }
                 if (!upcomingTrips.isEmpty()) {
@@ -265,7 +258,8 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
     private void setAlarm(String name, String description,
                           String date, String time, String source,
                           String destination, String type, String distance,
-                          double destLat, double destLong, ArrayList<String> notes) {
+                          double destLat, double destLong, ArrayList<String> notes,
+                          String repeatPattern, ArrayList<String> repeatDays, int id) {
         AlarmManager am = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(getContext().getApplicationContext(), AlarmBroadcast.class);
@@ -282,7 +276,7 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         intent.putStringArrayListExtra("notes", notes);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                getContext().getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+                getContext().getApplicationContext(), id, intent, PendingIntent.FLAG_ONE_SHOT);
         String dateNTime = date + " " + time;
         DateFormat formatter = new SimpleDateFormat("d-M-yyyy H:mm");
         Calendar c = Calendar.getInstance();

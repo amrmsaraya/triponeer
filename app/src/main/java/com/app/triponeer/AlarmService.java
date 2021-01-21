@@ -44,8 +44,6 @@ public class AlarmService extends Service {
     WindowManager.LayoutParams params;
     MediaPlayer myPlayer;
 
-
-    //
     TextView tvAlarmName, tvAlarmDesc, tvAlarmDate,
             tvAlarmTime, tvAlarmSource, tvAlarmDestination,
             tvAlarmType, tvAlarmDistance;
@@ -166,6 +164,7 @@ public class AlarmService extends Service {
                         getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
                 manager.cancel(pendingIntent);
                 myPlayer.stop();
+
                 stopSelf();
             }
         });

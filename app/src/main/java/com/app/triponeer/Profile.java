@@ -32,7 +32,6 @@ import com.squareup.picasso.Picasso;
 
 import java.io.FileInputStream;
 
-
 public class Profile extends Fragment {
     Button btnEditProfile, btnLogout;
     ImageView imgViewProfilePicture;
@@ -61,13 +60,6 @@ public class Profile extends Fragment {
         showUserData();
         btnEditProfile();
         btnLogout();
-
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
 
         return view;
     }
