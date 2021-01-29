@@ -101,10 +101,6 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         swipeRefreshLayoutUpcoming.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (reference != null && user != null) {
-                    getData();
-                }
-
                 swipeRefreshLayoutUpcoming.setRefreshing(false);
             }
         });
@@ -219,7 +215,6 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
         reference.child(user.getUid()).child("trips").child("upcoming").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                int id = 0;
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     trip = dataSnapshot.getValue(Trip.class);
                     if (trip != null) {
@@ -229,7 +224,7 @@ public class Upcoming extends Fragment implements OnUpcomingEmptyList {
                                 trip.getSourceName(), trip.getDestinationName(), trip.getType(),
                                 String.format("%.1f", trip.getDistance()),
                                 trip.getDestLat(), trip.getDestLong(),
-                                trip.getNotes(), trip.getRepeatPattern(), trip.getRepeatDays(), id++);
+                                trip.getNotes(), trip.getRepeatPattern(), trip.getRepeatDays(), trip.getDay() + trip.getHour() + trip.getMinute());
                     }
                 }
                 if (!upcomingTrips.isEmpty()) {

@@ -50,7 +50,7 @@
     <string name="delete">Delete</string>
     <string name="status">Status:</string>
     <string name="distance">Distance:</string>
-    <string name="confirm_delete">Are you sure that you want to delete this trip ?</string>
+    <string name="confirm_delete">Are you sure ?</string>
     <string name="login">Log In</string>
     <string name="create_new_account">Create New Triponeer Account</string>
     <string name="login_with_facebook">Login with Facebook</string>

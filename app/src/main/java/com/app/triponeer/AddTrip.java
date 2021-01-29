@@ -2,7 +2,9 @@ package com.app.triponeer;
 
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -263,7 +265,7 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                                 DateFormat formatter = new SimpleDateFormat("d-M-yyyy");
                                 try {
                                     Date date1 = formatter.parse(tmpDate);
-                                    if (c.getTimeInMillis() < date1.getTime()) {
+                                    if (c.getTimeInMillis() <= date1.getTime() + 86400000) {
                                         selected_year = year;
                                         selected_month = monthOfYear + 1;
                                         selected_day = dayOfMonth;
@@ -331,6 +333,13 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                             }
                         });
 
+                        setAlarm(trip.getName(), trip.getDescription(),
+                                trip.getDate(), trip.getHour() + ":" + trip.getMinute(),
+                                trip.getSourceName(), trip.getDestinationName(), trip.getType(),
+                                String.format("%.1f", trip.getDistance()),
+                                trip.getDestLat(), trip.getDestLong(),
+                                trip.getNotes(), trip.getRepeatPattern(), trip.getRepeatDays(), trip.getDay() + trip.getHour() + trip.getMinute());
+
                     } else if (job.equals("edit")) {
 
                         if (modifiedTrip == null) {
@@ -374,6 +383,13 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
                                         .replace(R.id.fragment_container, new Upcoming()).commit();
                             }
                         });
+
+                        setAlarm(modifiedTrip.getName(), modifiedTrip.getDescription(),
+                                modifiedTrip.getDate(), modifiedTrip.getHour() + ":" + modifiedTrip.getMinute(),
+                                modifiedTrip.getSourceName(), modifiedTrip.getDestinationName(), modifiedTrip.getType(),
+                                String.format("%.1f", modifiedTrip.getDistance()),
+                                modifiedTrip.getDestLat(), modifiedTrip.getDestLong(),
+                                modifiedTrip.getNotes(), modifiedTrip.getRepeatPattern(), modifiedTrip.getRepeatDays(), modifiedTrip.getDay() + modifiedTrip.getHour() + modifiedTrip.getMinute());
                     }
 
                 }
@@ -511,5 +527,41 @@ public class AddTrip extends Fragment implements AddNote.OnSaveNote, RepeatDays.
         this.roundSelectedDay = day;
         this.roundSelectedHour = hour;
         this.roundSelectedMinute = minute;
+    }
+
+    private void setAlarm(String name, String description,
+                          String date, String time, String source,
+                          String destination, String type, String distance,
+                          double destLat, double destLong, ArrayList<String> notes,
+                          String repeatPattern, ArrayList<String> repeatDays, int id) {
+        AlarmManager am = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(getContext().getApplicationContext(), AlarmBroadcast.class);
+        intent.putExtra("name", name);
+        intent.putExtra("description", description);
+        intent.putExtra("date", date);
+        intent.putExtra("time", time);
+        intent.putExtra("source", source);
+        intent.putExtra("destination", destination);
+        intent.putExtra("type", type);
+        intent.putExtra("distance", distance);
+        intent.putExtra("destLat", destLat);
+        intent.putExtra("destLong", destLong);
+        intent.putStringArrayListExtra("notes", notes);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                getContext().getApplicationContext(), id, intent, PendingIntent.FLAG_ONE_SHOT);
+        String dateNTime = date + " " + time;
+        DateFormat formatter = new SimpleDateFormat("d-M-yyyy H:mm");
+        Calendar c = Calendar.getInstance();
+        try {
+            Date date1 = formatter.parse(dateNTime);
+            if (c.getTimeInMillis() < date1.getTime()) {
+                am.set(AlarmManager.RTC_WAKEUP, date1.getTime(), pendingIntent);
+            }
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }

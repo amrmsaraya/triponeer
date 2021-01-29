@@ -61,12 +61,15 @@ public class History extends Fragment implements OnHistoryEmptyList {
         rvHistory.setAdapter(historyAdapter);
         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        getData();
+        if(reference != null && user != null)
+        {
+            getData();
+        }
+
 
         swipeRefreshLayoutHistory.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getData();
                 swipeRefreshLayoutHistory.setRefreshing(false);
             }
         });

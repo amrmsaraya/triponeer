@@ -17,6 +17,7 @@ public class AlarmBroadcast extends BroadcastReceiver {
         if (!Settings.canDrawOverlays(context)) {
             Intent intent2 = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + context.getPackageName()));
+            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent2);
         } else {
             Bundle bundle = intent.getExtras();
